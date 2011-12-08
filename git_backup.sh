@@ -118,7 +118,7 @@ function get_git()
 	FLAG_GLOBAL_FOUND="$(git branch -r | sed -e 's/\ *origin\///g' | grep "^${BRANCH}$" | wc -l)";
 	if [ "${FLAG_GLOBAL_FOUND}" == "0" ];
 	then
-	    echo "$(get_time)\tignore branch \"${BRANCH}\"";
+	    echo "$(get_time)    ignore branch \"${BRANCH}\"";
 	    continue;
 	fi
 
@@ -126,7 +126,7 @@ function get_git()
 	FLAG_LOCAL_FOUND="$(git branch | sed -e 's/\*\ //g' | grep "${BRANCH}" | wc -l)";
 	if [ "${FLAG_LOCAL_FOUND}" == "0" ];
 	then
-	    echo "$(get_time)\tget branch \"${BRANCH}\"";
+	    echo "$(get_time)    get branch \"${BRANCH}\"";
 	    git checkout -b "${BRANCH}" remotes/origin/"${BRANCH}" &> /dev/null;
 	    if [ "${?}" != "0" ];
 	    then
