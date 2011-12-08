@@ -1,7 +1,15 @@
 #!/bin/bash
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.0.4
+# 0.0.5
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+function get_time()
+{
+    if [ "$(which date)" != "" ];
+    then
+	echo "[$(date +'%Y-%m-%d %H-%M-%S')]: ";
+    fi
+}
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 function check_prog()
 {
@@ -9,7 +17,7 @@ function check_prog()
     do
 	if [ "$(which ${i})" == "" ];
 	then
-	    echo "ERROR: you must install \"${i}\"...";
+	    echo "$(get_time)ERROR: you must install \"${i}\"...";
 	    exit 1;
 	fi
     done
@@ -35,7 +43,7 @@ function kill_ring()
 
     if [ "${KILL_RING_CUR_ITEM_COUNT}" -gt "${KILL_RING_MAX_ITEM_COUNT}" ];
     then
-	echo "- time to kill old...";
+	echo "$(get_time)time to kill old...";
 
 	KILL_RING_ITEM_COUNT="${KILL_RING_CUR_ITEM_COUNT}";
 
@@ -44,9 +52,9 @@ function kill_ring()
 
 	if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
 	then
-	    echo "kill_ring(): KILL_RING_MAX_ITEM_COUNT=\"${KILL_RING_MAX_ITEM_COUNT}\"";
-	    echo "kill_ring(): KILL_RING_CUR_ITEM_COUNT=\"${KILL_RING_CUR_ITEM_COUNT}\"";
-	    echo "kill_ring(): KILL_RING_ITEM_COUNT=\"${KILL_RING_ITEM_COUNT}\"";
+	    echo "$(get_time)kill_ring(): KILL_RING_MAX_ITEM_COUNT=\"${KILL_RING_MAX_ITEM_COUNT}\"";
+	    echo "$(get_time)kill_ring(): KILL_RING_CUR_ITEM_COUNT=\"${KILL_RING_CUR_ITEM_COUNT}\"";
+	    echo "$(get_time)kill_ring(): KILL_RING_ITEM_COUNT=\"${KILL_RING_ITEM_COUNT}\"";
 	fi
 
 
@@ -59,11 +67,11 @@ function get_git()
     NAME="$(echo ${URL} | sed -e 's/\.git//g' | sed -e 's/.*:\|.*\///g')";
 
 
-    echo "- get project \"${NAME}\" from \"${URL}\"";
+    echo "$(get_time)get project \"${NAME}\" from \"${URL}\"";
     git clone "${URL}" "${NAME}" &> /dev/null;
     if [ "${?}" != "0" ];
     then
-	echo "ERROR: unknown error";
+	echo "$(get_time)ERROR: unknown error";
 	exit 1;
     fi
     cd "${NAME}";
@@ -74,14 +82,14 @@ function get_git()
     then
 	if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
 	then
-	    echo "get_git(): detect empty BRANCH_LIST";
+	    echo "$(get_time)get_git(): detect empty BRANCH_LIST";
 	fi
 
 	for BRANCH in $(git branch -r | sed -e 's/\ *origin\///g' | grep -v '\ ->' | grep -v '^master$');
 	do
 	    if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
 	    then
-		echo "get_git(): add branch:\"${BRANCH}\"";
+		echo "$(get_time)get_git(): add branch:\"${BRANCH}\"";
 	    fi
 
 	    if [ "${BRANCH_LIST}" != "" ];
@@ -95,7 +103,7 @@ function get_git()
 
     if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
     then
-	echo "get_git(): use BRANCH_LIST:\"${BRANCH_LIST}\"";
+	echo "$(get_time)get_git(): use BRANCH_LIST:\"${BRANCH_LIST}\"";
     fi
 
 
@@ -110,7 +118,7 @@ function get_git()
 	FLAG_GLOBAL_FOUND="$(git branch -r | sed -e 's/\ *origin\///g' | grep "^${BRANCH}$" | wc -l)";
 	if [ "${FLAG_GLOBAL_FOUND}" == "0" ];
 	then
-	    echo "  - ignore branch \"${BRANCH}\"";
+	    echo "$(get_time)\tignore branch \"${BRANCH}\"";
 	    continue;
 	fi
 
@@ -118,11 +126,11 @@ function get_git()
 	FLAG_LOCAL_FOUND="$(git branch | sed -e 's/\*\ //g' | grep "${BRANCH}" | wc -l)";
 	if [ "${FLAG_LOCAL_FOUND}" == "0" ];
 	then
-	    echo "  - get branch \"${BRANCH}\"";
+	    echo "$(get_time)\tget branch \"${BRANCH}\"";
 	    git checkout -b "${BRANCH}" remotes/origin/"${BRANCH}" &> /dev/null;
 	    if [ "${?}" != "0" ];
 	    then
-		echo "ERROR: unknown error";
+		echo "$(get_time)ERROR: unknown error";
 		exit 1;
 	    fi
 	fi
@@ -146,7 +154,7 @@ function parse()
 
 	if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
 	then
-	    echo "parse(): REPO_ITEM=\"${REPO_ITEM}\"";
+	    echo "$(get_time)parse(): REPO_ITEM=\"${REPO_ITEM}\"";
 	fi
 
 
@@ -179,7 +187,7 @@ function parse()
 
 	    if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
 	    then
-		echo "parse(): BRANCH=\"${BRANCH}\"";
+		echo "$(get_time)parse(): BRANCH=\"${BRANCH}\"";
 	    fi
 
 
@@ -230,11 +238,11 @@ function pack()
 
 
     FILE="${GIT_BACKUP_NAME}-$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
-    echo "- make ${FILE}";
+    echo "$(get_time)make ${FILE}";
     ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" git_backup;
     if [ "${?}" != "0" ];
     then
-	echo "unknown error";
+	echo "$(get_time)unknown error";
 	exit 1;
     fi
     mv "${FILE}.tmp" "${FILE}";
@@ -242,7 +250,7 @@ function pack()
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 function main()
 {
-    echo "git_backup 0.0.4";
+    echo "$(get_time)run git_backup v0.0.5";
 
 
     CHECK_PROG_LIST='git tar grep sed ls head xargs rm ionice nice awk date';
@@ -254,31 +262,31 @@ function main()
 
     if [ "${GIT_BACKUP_REPO_LIST}" == "" ];
     then
-	echo "ERROR: variable \"GIT_BACKUP_REPO_LIST\" not found...";
+	echo "$(get_time)ERROR: variable \"GIT_BACKUP_REPO_LIST\" not found...";
 	exit 1;
     fi
 
     if [ "${GIT_BACKUP_DIR}" == "" ];
     then
-	echo "ERROR: variable \"GIT_BACKUP_DIR\" not found...";
+	echo "$(get_time)ERROR: variable \"GIT_BACKUP_DIR\" not found...";
 	exit 1;
     fi
 
     if [ "${GIT_BACKUP_NAME}" == "" ];
     then
-	echo "ERROR: variable \"GIT_BACKUP_NAME\" not found...";
+	echo "$(get_time)ERROR: variable \"GIT_BACKUP_NAME\" not found...";
 	exit 1;
     fi
 
     if [ ! -d "${GIT_BACKUP_DIR}" ];
     then
-	echo "ERROR: variable \"GIT_BACKUP_DIR\" not found...";
+	echo "$(get_time)ERROR: variable \"GIT_BACKUP_DIR\" not found...";
 	exit 1;
     fi
 
 
     alarm;
-    echo "- use \"${GIT_BACKUP_DIR}\"";
+    echo "$(get_time)use backup dir \"${GIT_BACKUP_DIR}\"";
     cd "${GIT_BACKUP_DIR}";
 
 
@@ -306,11 +314,11 @@ function main()
 
 
     (( TAIL_DATE -= HEAD_DATE ));
-    echo "- work time: ${TAIL_DATE} secs";
+    echo "$(get_time)work time: ${TAIL_DATE} secs";
 }
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 main;
 
-echo "Ok.";
+echo "$(get_time)Ok.";
 exit 0;
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
