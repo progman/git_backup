@@ -18,6 +18,8 @@ function check_prog()
 	if [ "$(which ${i})" == "" ];
 	then
 	    echo "$(get_time)ERROR: you must install \"${i}\"...";
+	    echo;
+	    echo;
 	    exit 1;
 	fi
     done
@@ -72,6 +74,8 @@ function get_git()
     if [ "${?}" != "0" ];
     then
 	echo "$(get_time)ERROR: unknown error";
+	echo;
+	echo;
 	exit 1;
     fi
     cd "${NAME}";
@@ -131,6 +135,8 @@ function get_git()
 	    if [ "${?}" != "0" ];
 	    then
 		echo "$(get_time)ERROR: unknown error";
+		echo;
+		echo;
 		exit 1;
 	    fi
 	fi
@@ -243,6 +249,8 @@ function pack()
     if [ "${?}" != "0" ];
     then
 	echo "$(get_time)unknown error";
+	echo;
+	echo;
 	exit 1;
     fi
     mv "${FILE}.tmp" "${FILE}";
@@ -250,8 +258,6 @@ function pack()
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 function main()
 {
-    echo;
-    echo;
     echo "$(get_time)run git_backup v0.0.5";
 
 
@@ -265,24 +271,32 @@ function main()
     if [ "${GIT_BACKUP_REPO_LIST}" == "" ];
     then
 	echo "$(get_time)ERROR: variable \"GIT_BACKUP_REPO_LIST\" not found...";
+	echo;
+	echo;
 	exit 1;
     fi
 
     if [ "${GIT_BACKUP_DIR}" == "" ];
     then
 	echo "$(get_time)ERROR: variable \"GIT_BACKUP_DIR\" not found...";
+	echo;
+	echo;
 	exit 1;
     fi
 
     if [ "${GIT_BACKUP_NAME}" == "" ];
     then
 	echo "$(get_time)ERROR: variable \"GIT_BACKUP_NAME\" not found...";
+	echo;
+	echo;
 	exit 1;
     fi
 
     if [ ! -d "${GIT_BACKUP_DIR}" ];
     then
 	echo "$(get_time)ERROR: variable \"GIT_BACKUP_DIR\" not found...";
+	echo;
+	echo;
 	exit 1;
     fi
 
@@ -322,5 +336,7 @@ function main()
 main;
 
 echo "$(get_time)Ok.";
+echo;
+echo;
 exit 0;
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
