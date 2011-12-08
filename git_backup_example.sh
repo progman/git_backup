@@ -15,7 +15,9 @@ export GIT_BACKUP_NAME='my_git_backup'; # backup file prefix name
 # REPO2 - get ONLY BRANCH1 and BRANCH2
 # REPO3 - get ALL branch
 # REPO4 - get ONLY BRANCH1
-export GIT_BACKUP_REPO_LIST="git://github.com/progman/gitbash.git";
-export GIT_BACKUP_REPO_LIST="${GIT_BACKUP_REPO_LIST}, git://github.com/progman/git_backup.git master";
+export GIT_BACKUP_REPO_LIST="\
+git://github.com/progman/gitbash.git, \
+git://github.com/progman/git_backup.git master \
+";
 
 ./git_backup.sh
