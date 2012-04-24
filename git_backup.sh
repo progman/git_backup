@@ -1,6 +1,6 @@
 #!/bin/bash
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.0.5
+# 0.0.6
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 function get_time()
@@ -219,6 +219,11 @@ function pack()
 	then
 	    ARCH_EXT='tar.gz';
 	    ARCH_OPT='cfz';
+
+	    if [ "${GZIP}" == "" ];
+	    then
+		export GZIP='-9';
+	    fi
 	fi
     fi
 
@@ -229,6 +234,11 @@ function pack()
 	then
 	    ARCH_EXT='tar.bz2';
 	    ARCH_OPT='cfj';
+
+	    if [ "${BZIP2}" == "" ];
+	    then
+		export BZIP2='-9';
+	    fi
 	fi
     fi
 
@@ -239,6 +249,11 @@ function pack()
 	then
 	    ARCH_EXT='tar.xz';
 	    ARCH_OPT='cfJ';
+
+	    if [ "${XZ_OPT}" == "" ];
+	    then
+		export XZ_OPT='-9 --extreme';
+	    fi
 	fi
     fi
 
