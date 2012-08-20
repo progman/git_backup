@@ -1,12 +1,11 @@
 #!/bin/bash
 
 
-export GIT_BACKUP_DIR='/tmp/';           # dir for backups
-export GIT_BACKUP_NAME='my_git_backup'; # backup file prefix name
-#export GIT_BACKUP_FLAG_USE_GZIP=1;     # use gzip,  default auto
-#export GIT_BACKUP_FLAG_USE_BZIP2=1;    # use bzip2, default auto
-#export GIT_BACKUP_FLAG_USE_XZ=1;       # use xz,    default auto
-#export GIT_BACKUP_MAX_ITEM_COUNT=0 ;   # max backups count. default 0 - disable
+export GIT_BACKUP_DIR='/tmp/git_backup'; # dir for backups
+#export GIT_BACKUP_FLAG_USE_GZIP=1;       # use gzip,  default auto
+#export GIT_BACKUP_FLAG_USE_BZIP2=1;      # use bzip2, default auto
+#export GIT_BACKUP_FLAG_USE_XZ=1;         # use xz,    default auto
+#export GIT_BACKUP_MAX_ITEM_COUNT=0;      # max backups count. default 0 - disable
 
 
 #export GIT_BACKUP_REPO_LIST='REPO1, REPO2 BRANCH1 BRANCH2, REPO3, REPO4 BRANCH1';

@@ -1,6 +1,6 @@
 #!/bin/bash
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.0.7
+# 0.0.8
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 function get_time()
@@ -64,11 +64,83 @@ function kill_ring()
 	fi
 }
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+function pack()
+{
+	NAME="${1}";
+
+	ARCH_EXT='tar';
+	ARCH_OPT='cf';
+
+
+	if [ "$(which gzip)" != "" ];
+	then
+		if [ "${GIT_BACKUP_FLAG_USE_BZIP2}" != "1" ] && [ "${GIT_BACKUP_FLAG_USE_XZ}" != "1" ];
+		then
+			ARCH_EXT='tar.gz';
+			ARCH_OPT='cfz';
+
+			if [ "${GZIP}" == "" ];
+			then
+				export GZIP='-9';
+			fi
+		fi
+	fi
+
+
+	if [ "$(which bzip2)" != "" ];
+	then
+		if [ "${GIT_BACKUP_FLAG_USE_GZIP}" != "1" ] && [ "${GIT_BACKUP_FLAG_USE_XZ}" != "1" ];
+		then
+			ARCH_EXT='tar.bz2';
+			ARCH_OPT='cfj';
+
+			if [ "${BZIP2}" == "" ];
+			then
+				export BZIP2='-9';
+			fi
+		fi
+	fi
+
+
+	if [ "$(which xz)" != "" ];
+	then
+		if [ "${GIT_BACKUP_FLAG_USE_GZIP}" != "1" ] && [ "${GIT_BACKUP_FLAG_USE_BZIP2}" != "1" ];
+		then
+			ARCH_EXT='tar.xz';
+			ARCH_OPT='cfJ';
+
+			if [ "${XZ_OPT}" == "" ];
+			then
+				export XZ_OPT='-9 --extreme';
+			fi
+		fi
+	fi
+
+
+	FILE="${NAME}-$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
+	echo "$(get_time)make ${FILE}";
+	ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME}";
+	if [ "${?}" != "0" ];
+	then
+		echo "$(get_time)unknown error";
+		echo;
+		echo;
+		exit 1;
+	fi
+	mv "${FILE}.tmp" "${FILE}";
+	rm -rf "${NAME}" &> /dev/null;
+}
+#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 function get_git()
 {
 	NAME="$(echo ${URL} | sed -e 's/\.git//g' | sed -e 's/.*:\|.*\///g')";
 
 
+	mkdir "${NAME}" &> /dev/null;
+	cd "${NAME}" &> /dev/null;
+
+
+	rm -rf "${NAME}" &> /dev/null;
 	echo "$(get_time)get project \"${NAME}\" from \"${URL}\"";
 	git clone "${URL}" "${NAME}" &> /dev/null;
 	if [ "${?}" != "0" ];
@@ -143,7 +215,19 @@ function get_git()
 	done
 
 
+# back to master branch (if exist)
 	git checkout master &> /dev/null;
+
+
+	cd ..;
+
+
+	pack "${NAME}";
+
+
+	KILL_RING_PATH="${GIT_BACKUP_DIR}/${NAME}";
+	KILL_RING_MAX_ITEM_COUNT="${GIT_BACKUP_MAX_ITEM_COUNT}";
+	kill_ring;
 
 
 	cd ..;
@@ -214,72 +298,12 @@ function parse()
 	done
 }
 #--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-function pack()
-{
-	if [ "$(which gzip)" != "" ];
-	then
-		if [ "${GIT_BACKUP_FLAG_USE_BZIP2}" != "1" ] && [ "${GIT_BACKUP_FLAG_USE_XZ}" != "1" ];
-		then
-			ARCH_EXT='tar.gz';
-			ARCH_OPT='cfz';
-
-			if [ "${GZIP}" == "" ];
-			then
-				export GZIP='-9';
-			fi
-		fi
-	fi
-
-
-	if [ "$(which bzip2)" != "" ];
-	then
-		if [ "${GIT_BACKUP_FLAG_USE_GZIP}" != "1" ] && [ "${GIT_BACKUP_FLAG_USE_XZ}" != "1" ];
-		then
-			ARCH_EXT='tar.bz2';
-			ARCH_OPT='cfj';
-
-			if [ "${BZIP2}" == "" ];
-			then
-				export BZIP2='-9';
-			fi
-		fi
-	fi
-
-
-	if [ "$(which xz)" != "" ];
-	then
-		if [ "${GIT_BACKUP_FLAG_USE_GZIP}" != "1" ] && [ "${GIT_BACKUP_FLAG_USE_BZIP2}" != "1" ];
-		then
-			ARCH_EXT='tar.xz';
-			ARCH_OPT='cfJ';
-
-			if [ "${XZ_OPT}" == "" ];
-			then
-				export XZ_OPT='-9 --extreme';
-			fi
-		fi
-	fi
-
-
-	FILE="${GIT_BACKUP_NAME}-$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
-	echo "$(get_time)make ${FILE}";
-	ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" git_backup;
-	if [ "${?}" != "0" ];
-	then
-		echo "$(get_time)unknown error";
-		echo;
-		echo;
-		exit 1;
-	fi
-	mv "${FILE}.tmp" "${FILE}";
-}
-#--------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 function main()
 {
-	echo "$(get_time)run git_backup v0.0.5";
+	echo "$(get_time)run git_backup v0.0.8";
 
 
-	CHECK_PROG_LIST='git tar grep sed ls head xargs rm ionice nice awk date';
+	CHECK_PROG_LIST='awk date git grep head ionice ls mkdir mv nice rm sed sort tar wc xargs';
 	check_prog;
 
 
@@ -302,17 +326,11 @@ function main()
 		exit 1;
 	fi
 
-	if [ "${GIT_BACKUP_NAME}" == "" ];
-	then
-		echo "$(get_time)ERROR: variable \"GIT_BACKUP_NAME\" not found...";
-		echo;
-		echo;
-		exit 1;
-	fi
+	mkdir -p "${GIT_BACKUP_DIR}" &> /dev/null;
 
 	if [ ! -d "${GIT_BACKUP_DIR}" ];
 	then
-		echo "$(get_time)ERROR: variable \"GIT_BACKUP_DIR\" not found...";
+		echo "$(get_time)ERROR: dir \"GIT_BACKUP_DIR\" not found...";
 		echo;
 		echo;
 		exit 1;
@@ -324,24 +342,7 @@ function main()
 	cd "${GIT_BACKUP_DIR}";
 
 
-	rm -rf git_backup &> /dev/null;
-	mkdir git_backup &> /dev/null;
-
-
-	cd git_backup;
 	parse;
-	cd ..;
-
-
-	pack;
-
-
-	KILL_RING_PATH="${GIT_BACKUP_DIR}";
-	KILL_RING_MAX_ITEM_COUNT="${GIT_BACKUP_MAX_ITEM_COUNT}";
-	kill_ring;
-
-
-	rm -rf git_backup &> /dev/null;
 
 
 	TAIL_DATE="$(date +'%s')";
