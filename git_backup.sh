@@ -222,7 +222,6 @@ function get_git()
 			then
 				BRANCH_LIST="${BRANCH_LIST} ";
 			fi
-#			BRANCH_LIST="${BRANCH_LIST} ${BRANCH}";
 			BRANCH_LIST="${BRANCH_LIST}${BRANCH}";
 		done
 	fi

@@ -17,9 +17,7 @@ export GIT_BACKUP_DIR='/tmp/git_backup'; # dir for backups
 # REPO4 - get ONLY BRANCH1
 export GIT_BACKUP_REPO_LIST="\
 git://github.com/progman/gitbash.git, \
-git://github.com/progman/git_backup.git master, \
-/tmp/xxx, \
-/tmp/yyy \
+git://github.com/progman/git_backup.git master \
 ";
 
 ./git_backup.sh
