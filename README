@@ -1,4 +1,4 @@
-Simple backup script for remote Git repos
+Simple backup Git repos
 
 
 1) Get this: git clone git://github.com/progman/git_backup.git
