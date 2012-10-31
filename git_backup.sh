@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.1.0
+# 0.1.1
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -123,11 +123,11 @@ function pack()
 
 
 	FILE="${NAME}-$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
-	echo "$(get_time)[+]make ${FILE}";
+	echo "$(get_time)[+]pack repository \"${NAME}\" to \"${FILE}\"";
 	ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME}";
 	if [ "${?}" != "0" ];
 	then
-		echo "$(get_time)[!]error make repository archive";
+		echo "$(get_time)[!]error pack repository archive";
 		echo;
 		echo;
 		exit 1;
@@ -429,7 +429,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.1.0";
+	echo "$(get_time)run git_backup v0.1.1";
 
 
 	CHECK_PROG_LIST='awk date git grep head ionice ls mkdir mv nice rm sed sort tar wc xargs';
