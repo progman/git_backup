@@ -60,7 +60,7 @@ function kill_ring()
 		fi
 
 
-		ls -1 "${KILL_RING_PATH}" | grep '\.tar' | sort -n | head -n "${KILL_RING_ITEM_COUNT}" | xargs rm -rf --;
+		ls -1 --color=none "${KILL_RING_PATH}" | grep '\.tar' | sort -n | head -n "${KILL_RING_ITEM_COUNT}" | xargs rm -rf --;
 	fi
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
