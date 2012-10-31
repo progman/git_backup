@@ -123,11 +123,11 @@ function pack()
 
 
 	FILE="${NAME}-$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
-	echo "$(get_time)make ${FILE}";
+	echo "$(get_time)[+]make ${FILE}";
 	ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME}";
 	if [ "${?}" != "0" ];
 	then
-		echo "$(get_time)unknown error";
+		echo "$(get_time)[!]error make repository archive";
 		echo;
 		echo;
 		exit 1;
@@ -150,6 +150,25 @@ function get_git()
 
 # clone or update git repo
 	FLAG_CLONE='1';
+
+
+# if repo not exist try unpack last archive and update
+	if [ ! -e "${NAME}" ];
+	then
+		ARCH="$(ls -1 --color=none | grep '\.tar' | sort -n | tail -n 1)";
+
+		if [ "${ARCH}" != "" ];
+		then
+			echo "$(get_time)unpack repository \"${NAME}\" from last backup \"${ARCH}\"";
+
+			tar xvf "${ARCH}" &> /dev/null;
+			if [ "${?}" != "0" ];
+			then
+				echo "$(get_time)[!]error unpack, skip it...";
+				rm -rf "${NAME}" &> /dev/null;
+			fi
+		fi
+	fi
 
 
 # if repo exist try update
@@ -181,48 +200,10 @@ function get_git()
 		fi
 
 		cd ..;
-	fi
 
-
-# if repo not exist try unpack last archive and update
-	if [ "${FLAG_CLONE}" == "1" ];
-	then
-		ARCH="$(ls -1 --color=none | grep '\.tar' | sort -n | tail -n 1)";
-
-		if [ "${ARCH}" != "" ];
+		if [ "${FLAG_CLONE}" != "0" ];
 		then
-			echo "$(get_time)unpack repository \"${NAME}\" from last backup \"${ARCH}\"";
-
-			tar xvf "${ARCH}" &> /dev/null;
-			if [ "${?}" == "0" ];
-			then
-				cd "${NAME}";
-
-# is git repo?
-				git branch &> /dev/null;
-				if [ "${?}" == "0" ];
-				then
-
-# is not modify?
-					if [ "$(git status --porcelain | wc -l)" == "0" ];
-					then
-
-# repo URL and exist repo URL equal?
-						URL_CUR=$(git config -l | grep '^remote.origin.url' | sed -e 's/remote.origin.url=//g');
-						if [ "${URL}" == "${URL_CUR}" ];
-						then
-							echo "$(get_time)update repository \"${NAME}\" from \"${URL}\"";
-							git fetch --all -p &> /dev/null;
-							if [ "${?}" == "0" ];
-							then
-								FLAG_CLONE=0;
-							fi
-						fi
-					fi
-				fi
-
-				cd ..;
-			fi
+			echo "$(get_time)[!]error update, skip it...";
 		fi
 	fi
 
