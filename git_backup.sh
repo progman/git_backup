@@ -41,7 +41,7 @@ function kill_ring()
 	fi
 
 
-	KILL_RING_CUR_ITEM_COUNT=$(ls -1 "${KILL_RING_PATH}" | grep '\.tar' | sort | wc -l);
+	KILL_RING_CUR_ITEM_COUNT=$(ls -1 "${KILL_RING_PATH}" | grep '\.tar' | wc -l);
 
 	if [ "${KILL_RING_CUR_ITEM_COUNT}" -gt "${KILL_RING_MAX_ITEM_COUNT}" ];
 	then
@@ -60,7 +60,7 @@ function kill_ring()
 		fi
 
 
-		ls -1 "${KILL_RING_PATH}" | grep '\.tar' | head -n "${KILL_RING_ITEM_COUNT}" | xargs rm -rf --;
+		ls -1 "${KILL_RING_PATH}" | grep '\.tar' | sort -n | head -n "${KILL_RING_ITEM_COUNT}" | xargs rm -rf --;
 	fi
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -284,7 +284,7 @@ function get_git()
 				FLAG_REPO_UPDATE='1';
 			fi
 		else
-			echo "$(get_time)    get branch \"${BRANCH}\"";
+			echo "$(get_time)    clone branch \"${BRANCH}\"";
 			git checkout -b "${BRANCH}" remotes/origin/"${BRANCH}" &> /dev/null;
 			if [ "${?}" != "0" ];
 			then
