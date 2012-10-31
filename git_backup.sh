@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.0.9
+# 0.1.0
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 function get_time()
@@ -146,7 +146,7 @@ function get_git()
 	FLAG_CLONE='1';
 
 
-# git repo NAME exist?
+# if repo exist try update
 	if [ -e "${NAME}" ];
 	then
 		cd "${NAME}";
@@ -175,6 +175,49 @@ function get_git()
 		fi
 
 		cd ..;
+	fi
+
+
+# if repo not exist try unpack last archive and update
+	if [ "${FLAG_CLONE}" == "1" ];
+	then
+		ARCH="$(ls -1 --color=none | grep '\.tar' | sort -n | tail -n 1)";
+
+		if [ "${ARCH}" != "" ];
+		then
+			echo "$(get_time)unpack repository \"${NAME}\" from last backup \"${ARCH}\"";
+
+			tar xvf "${ARCH}" &> /dev/null;
+			if [ "${?}" == "0" ];
+			then
+				cd "${NAME}";
+
+# is git repo?
+				git branch &> /dev/null;
+				if [ "${?}" == "0" ];
+				then
+
+# is not modify?
+					if [ "$(git status --porcelain | wc -l)" == "0" ];
+					then
+
+# repo URL and exist repo URL equal?
+						URL_CUR=$(git config -l | grep '^remote.origin.url' | sed -e 's/remote.origin.url=//g');
+						if [ "${URL}" == "${URL_CUR}" ];
+						then
+							echo "$(get_time)update repository \"${NAME}\" from \"${URL}\"";
+							git fetch --all -p &> /dev/null;
+							if [ "${?}" == "0" ];
+							then
+								FLAG_CLONE=0;
+							fi
+						fi
+					fi
+				fi
+
+				cd ..;
+			fi
+		fi
 	fi
 
 
@@ -233,6 +276,7 @@ function get_git()
 	fi
 
 
+# update or clone branches
 	for BRANCH in ${BRANCH_LIST};
 	do
 		if [ "${BRANCH}" == "" ];
@@ -298,7 +342,7 @@ function get_git()
 	done
 
 
-# back to master branch (if exist)
+# back to default branch
 	git checkout "${DEFAULT_BRANCH}" &> /dev/null;
 
 
@@ -396,7 +440,7 @@ function parse()
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 function main()
 {
-	echo "$(get_time)run git_backup v0.0.9";
+	echo "$(get_time)run git_backup v0.1.0";
 
 
 	CHECK_PROG_LIST='awk date git grep head ionice ls mkdir mv nice rm sed sort tar wc xargs';
