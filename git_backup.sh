@@ -249,7 +249,7 @@ function get_git()
 
 
 # save default branch, may be 'master'
-	DEFAULT_BRANCH=$(git branch | grep '^\*' | sed -e 's/\*\ //g');
+	DEFAULT_BRANCH="$(git branch | grep '^\*' | sed -e 's/\*\ //g')";
 
 
 # choice all branches if BRANCH_LIST is empty
