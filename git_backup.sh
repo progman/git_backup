@@ -142,6 +142,7 @@ function get_git()
 
 
 	mkdir "${NAME}" &> /dev/null;
+	touch "${NAME}" &> /dev/null;
 	cd "${NAME}" &> /dev/null;
 
 
@@ -468,6 +469,7 @@ function main()
 
 	alarm;
 	echo "$(get_time)use backup dir \"${GIT_BACKUP_DIR}\"";
+	touch "${GIT_BACKUP_DIR}" &> /dev/null;
 	cd "${GIT_BACKUP_DIR}";
 
 
