@@ -1,7 +1,7 @@
 # this is Git repositories list
-# REPO1                 - get ALL branch
+# REPO1                 - get ALL branches
 # REPO2 BRANCH1         - get ONLY BRANCH1
 # REPO3 BRANCH1 BRANCH2 - get ONLY BRANCH1 and BRANCH2
 
 git://github.com/progman/gitbash.git
-git://github.com/progman/git_backup.git master # this repository
+git://github.com/progman/git_backup.git master # this repository, only branch 'master'
