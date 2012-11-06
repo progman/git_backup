@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.1.1
+# 0.1.2
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -364,27 +364,18 @@ function get_git()
 # parse repo list
 function parse()
 {
-	REPO_ITEM_INDEX=1;
-	while true;
+	TMP="$(mktemp)";
+
+	sed -e 's/#.*//' "${GIT_BACKUP_REPO_LIST}" | sed -e 's/\ *$//g' | sed -e '/^$/d' > "${TMP}";
+
+
+	while read -r REPO_ITEM;
 	do
-		REPO_ITEM=$(echo "${GIT_BACKUP_REPO_LIST}" | awk -F',' "{print \$${REPO_ITEM_INDEX}}");
-
-		if [ "${REPO_ITEM}" == "" ];
-		then
-			break;
-		fi
-
-		if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
-		then
-			echo "$(get_time)parse(): REPO_ITEM=\"${REPO_ITEM}\"";
-		fi
-
 
 		URL='';
 		BRANCH_LIST='';
-
-
 		BRANCH_INDEX=1;
+
 		while true;
 		do
 			BRANCH=$(echo "${REPO_ITEM}" | awk -F' ' "{print \$${BRANCH_INDEX}}");
@@ -422,18 +413,19 @@ function parse()
 			get_git;
 		fi
 
+	done < "${TMP}";
 
-		(( REPO_ITEM_INDEX++ ));
-	done
+
+	rm "${TMP}" &> /dev/null;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.1.1";
+	echo "$(get_time)run git_backup v0.1.2";
 
 
-	CHECK_PROG_LIST='awk date git grep head ionice ls mkdir mv nice rm sed sort tar wc xargs';
+	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs';
 	check_prog;
 
 
