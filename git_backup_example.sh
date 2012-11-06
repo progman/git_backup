@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mkdir /tmp/git_backup;
-cp ./git_backup.list /tmp/git_backup/;
+mkdir /tmp/git_backup &> /dev/null;
+cp ./git_backup.list /tmp/git_backup/ &> /dev/null;
 
 #export GIT_BACKUP_FLAG_USE_GZIP=1;       # use only gzip,  default auto
 #export GIT_BACKUP_FLAG_USE_BZIP2=1;      # use only bzip2, default auto
