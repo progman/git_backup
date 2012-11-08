@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.1.2
+# 0.1.3
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -176,6 +176,7 @@ function get_git()
 	if [ -e "${NAME}" ];
 	then
 		cd "${NAME}";
+		echo "$(get_time)update repository \"${NAME}\" from \"${URL}\"";
 
 # is git repo?
 		git branch &> /dev/null;
@@ -190,22 +191,24 @@ function get_git()
 				URL_CUR=$(git config -l | grep '^remote.origin.url' | sed -e 's/remote.origin.url=//g');
 				if [ "${URL}" == "${URL_CUR}" ];
 				then
-					echo "$(get_time)update repository \"${NAME}\" from \"${URL}\"";
 					git fetch --all -p &> /dev/null;
 					if [ "${?}" == "0" ];
 					then
 						FLAG_CLONE=0;
+					else
+						echo "$(get_time)[!]error update, fetch error, skip it...";
 					fi
+				else
+					echo "$(get_time)[!]error update, alien remote.origin.url, skip it...";
 				fi
+			else
+				echo "$(get_time)[!]error update, this repository modify, skip it...";
 			fi
+		else
+			echo "$(get_time)[!]error update, is NOT repository, skip it...";
 		fi
 
 		cd ..;
-
-		if [ "${FLAG_CLONE}" != "0" ];
-		then
-			echo "$(get_time)[!]error update, skip it...";
-		fi
 	fi
 
 
