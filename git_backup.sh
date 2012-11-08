@@ -425,7 +425,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.1.2";
+	echo "$(get_time)run git_backup v0.1.3";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs';
