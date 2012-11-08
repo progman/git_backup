@@ -1,6 +1,12 @@
 Simple and full backup Git repositories
 
 
+Simple start. Easy config. Detailed log.
+Auto Clone/Update repository (full and incremental backup).
+Backup all or manual branches. Pack repository. Auto and manual choise compressor.
+Circular buffer for archives (default disabled).
+
+
 1) Get this: git clone git://github.com/progman/git_backup.git
 2) View and run git_backup_example.sh for simple start
 3) Just use it!
