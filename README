@@ -1,7 +1,8 @@
 Simple and full backup Git repositories
 
 
-Easy config. Detailed log. Auto Clone/Update repository (full and incremental backup).
+Easy config. Detailed log.
+Auto Clone/Update repository (full and incremental backup).
 Auto backup all or manual branches. Auto and manual choise compressor for archives.
 Circular buffer for archives (default disabled).
 
