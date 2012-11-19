@@ -8,6 +8,7 @@ cp ./git_backup.list /tmp/git_backup/ &> /dev/null; # for example only, delete t
 #export GIT_BACKUP_FLAG_USE_XZ=1;         # use only xz,    default auto
 #export GIT_BACKUP_MAX_ITEM_COUNT=0;      # max backups count. default 0 - disable
 #export GIT_BACKUP_FLAG_SMALL_AND_SLOW=0; # delete temporary cache. default 0 - disable
+#export GIT_BACKUP_FLAG_VIEW_SIZE=0;      # view total backup size. default 1 - enable
 
 export GIT_BACKUP_DIR='/tmp/git_backup'; # dir for backups
 export GIT_BACKUP_REPO_LIST="/tmp/git_backup/git_backup.list"; # repo list, see git_backup.list

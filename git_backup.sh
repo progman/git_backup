@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.1.3
+# 0.1.4
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -34,6 +34,60 @@ function alarm()
 	then
 		beep -r 1 -f 3000;
 	fi
+}
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+# convert SIZE to human readable string
+function human_size()
+{
+	NAME=( "B" "kB" "MB" "GB" "TB" "PB" "EB" "ZB" "YB" );
+	NAME_INDEX=0;
+
+	while true;
+	do
+		if [ ${SIZE} -le 1024 ];
+		then
+			break;
+		fi
+		(( PART = SIZE / 100 ));
+		(( SIZE /= 1024 ));
+		(( NAME_INDEX++ ));
+	done
+
+	PART_SIZE=${#PART};
+	(( PART_SIZE-- ));
+	PART_VALUE=${PART:$PART_SIZE:1};
+
+	HUMAN_SIZE="${SIZE}.${PART_VALUE} ${NAME[$NAME_INDEX]}";
+}
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+# get size of tar backup files
+function get_size_min()
+{
+	TMPFILE=$(mktemp);
+	find ./ -maxdepth 2 -type f -iname '*\.tar*' -printf '%s\n' > "${TMPFILE}";
+
+	SIZE=0;
+	while read -r ITEM_SIZE;
+	do
+		(( SIZE += ITEM_SIZE ));
+	done < "${TMPFILE}";
+
+	rm -rf "${TMPFILE}" &> /dev/null;
+}
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+# get size of tar backup files + cache files
+function get_size_max()
+{
+	TMPFILE=$(mktemp);
+	find ./ -type f -printf '%s\n' > "${TMPFILE}";
+
+	SIZE=0;
+	while read -r ITEM_SIZE;
+	do
+		(( SIZE += ITEM_SIZE ));
+	done < "${TMPFILE}";
+
+	rm -rf "${TMPFILE}" &> /dev/null;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # kill old backups (default disable)
@@ -425,7 +479,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.1.3";
+	echo "$(get_time)run git_backup v0.1.4";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs';
@@ -469,6 +523,20 @@ function main()
 
 
 	parse;
+
+
+	if [ "${GIT_BACKUP_FLAG_VIEW_SIZE}" != "0" ];
+	then
+		get_size_min;
+		human_size;
+		HUMAN_SIZE_MIN="${HUMAN_SIZE}";
+
+		get_size_max;
+		human_size;
+		HUMAN_SIZE_MAX="${HUMAN_SIZE}";
+
+		echo "$(get_time)total backup size min/max: ${HUMAN_SIZE_MIN}/${HUMAN_SIZE_MAX}";
+	fi
 
 
 	TAIL_DATE="$(date +'%s')";
