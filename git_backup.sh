@@ -246,6 +246,7 @@ function get_git()
 				if [ "${URL}" == "${URL_CUR}" ];
 				then
 					FLAG_FETCH='1';
+# fsck repo if enabled
 					if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
 					then
 						git fsck --full &> /dev/null;
@@ -255,7 +256,7 @@ function get_git()
 							echo "$(get_time)[!]error update, fsck error, skip it...";
 						fi
 					fi
-
+# fetch all
 					if [ "${FLAG_FETCH}" == "1" ];
 					then
 						git fetch --all -p &> /dev/null;
@@ -405,6 +406,13 @@ function get_git()
 	git checkout "${DEFAULT_BRANCH}" &> /dev/null;
 
 
+# garbage collect cache repository
+	if [ "${GIT_BACKUP_FLAG_REPO_GC}" == "1" ] && [ "${GIT_BACKUP_FLAG_REPO_CACHE}" != "0" ];
+	then
+		git gc --aggressive &> /dev/null;
+	fi
+
+
 	cd ..;
 
 
@@ -417,7 +425,7 @@ function get_git()
 	fi
 
 
-# delete clone repo
+# delete clone repository
 	if [ "${GIT_BACKUP_FLAG_REPO_CACHE}" == "0" ];
 	then
 		rm -rf "${NAME}" &> /dev/null;
