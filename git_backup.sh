@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.1.4
+# 0.1.5
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -245,12 +245,26 @@ function get_git()
 				URL_CUR=$(git config -l | grep '^remote.origin.url' | sed -e 's/remote.origin.url=//g');
 				if [ "${URL}" == "${URL_CUR}" ];
 				then
-					git fetch --all -p &> /dev/null;
-					if [ "${?}" == "0" ];
+					FLAG_FETCH='1';
+					if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
 					then
-						FLAG_CLONE=0;
-					else
-						echo "$(get_time)[!]error update, fetch error, skip it...";
+						git fsck --full &> /dev/null;
+						if [ "${?}" != "0" ];
+						then
+							FLAG_FETCH='0';
+							echo "$(get_time)[!]error update, fsck error, skip it...";
+						fi
+					fi
+
+					if [ "${FLAG_FETCH}" == "1" ];
+					then
+						git fetch --all -p &> /dev/null;
+						if [ "${?}" == "0" ];
+						then
+							FLAG_CLONE='0';
+						else
+							echo "$(get_time)[!]error update, fetch error, skip it...";
+						fi
 					fi
 				else
 					echo "$(get_time)[!]error update, alien remote.origin.url, skip it...";
@@ -404,7 +418,7 @@ function get_git()
 
 
 # delete clone repo
-	if [ "${GIT_BACKUP_FLAG_SMALL_AND_SLOW}" == "1" ];
+	if [ "${GIT_BACKUP_FLAG_REPO_CACHE}" == "0" ];
 	then
 		rm -rf "${NAME}" &> /dev/null;
 	fi
@@ -479,7 +493,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.1.4";
+	echo "$(get_time)run git_backup v0.1.5";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs';
