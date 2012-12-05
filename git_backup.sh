@@ -105,7 +105,9 @@ function kill_ring()
 
 	TMPFILE="$(mktemp)";
 
-	find "${KILL_RING_PATH}" -maxdepth 1 -type f -iname '*\.tar*' -printf '%T@ %p\n' | sort -n &> "${TMPFILE}";
+	OLDPWD="$(pwd)";
+	cd "${KILL_RING_PATH}";
+	find ./ -maxdepth 1 -type f -iname '*\.tar*' -printf '%T@ %p\n' | sort -n &> "${TMPFILE}";
 
 	KILL_RING_CUR_ITEM_COUNT=$(cat "${TMPFILE}" | wc -l);
 
@@ -138,6 +140,7 @@ function kill_ring()
 	fi
 
 	rm -rf "${TMPFILE}" &> /dev/null;
+	cd "${OLDPWD}";
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # make archive
