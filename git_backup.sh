@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.1.5
+# 0.2.0
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -125,8 +125,6 @@ function kill_ring()
 # make archive
 function pack()
 {
-	NAME="${1}";
-
 	ARCH_EXT='tar';
 	ARCH_OPT='cf';
 
@@ -176,9 +174,9 @@ function pack()
 	fi
 
 
-	FILE="${NAME}-$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
-	echo "$(get_time)[+]pack repository \"${NAME}\" to \"${FILE}\"";
-	ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME}";
+	FILE="${NAME_BARE}.$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
+	echo "$(get_time)[+]pack repository \"${NAME}\"";
+	ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME_BARE}";
 	if [ "${?}" != "0" ];
 	then
 		echo "$(get_time)[!]error pack repository archive";
@@ -189,17 +187,96 @@ function pack()
 	mv "${FILE}.tmp" "${FILE}";
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+# for old versions compatibility, auto convert from old format
+function stupid_compatibility()
+{
+	if [ -e "${NAME}" ];
+	then
+		cd "${NAME}";
+
+		for i in $(find ./ -maxdepth 1 -type d | grep -v '^./$');
+		do
+			rm -rf "${i}" &> /dev/null;
+		done
+
+		FLAG_RENAME='0';
+
+		ARCH="$(ls -1 --color=none | grep '\.tar' | sort -n | tail -n 1)";
+		if [ "${ARCH}" != "" ];
+		then
+			tar xvf "${ARCH}" &> /dev/null;
+			if [ "${?}" == "0" ];
+			then
+
+				if [ -e "${NAME}" ];
+				then
+					cd "${NAME}";
+					XURL=$(git config -l | grep remote.origin.url | sed -e 's/remote.origin.url=//g');
+					XHASH=$(echo "${XURL}" | sha1sum | awk '{print $1}');
+					cd ..;
+					if [ "${XURL}" != "" ];
+					then
+						FLAG_RENAME='1';
+						rm -rf "${NAME}" &> /dev/null;
+					fi
+				fi
+
+				if [ -e "${NAME}.git" ];
+				then
+					cd "${NAME}.git";
+					XURL=$(git config -l | grep remote.origin.url | sed -e 's/remote.origin.url=//g');
+					XHASH=$(echo "${XURL}" | sha1sum | awk '{print $1}');
+					cd ..;
+					if [ "${XURL}" != "" ];
+					then
+						FLAG_RENAME='1';
+						rm -rf "${NAME}.git" &> /dev/null;
+					fi
+				fi
+
+				if [ -e "${NAME}.${HASH}.git" ];
+				then
+					cd "${NAME}.${HASH}.git";
+					XURL=$(git config -l | grep remote.origin.url | sed -e 's/remote.origin.url=//g');
+					XHASH=$(echo "${XURL}" | sha1sum | awk '{print $1}');
+					cd ..;
+					if [ "${XURL}" != "" ];
+					then
+						FLAG_RENAME='1';
+						rm -rf "${NAME}.${HASH}.git" &> /dev/null;
+					fi
+				fi
+			fi
+		fi
+
+		cd ..;
+
+		if [ "${FLAG_RENAME}" == "1" ];
+		then
+			mv "${NAME}" "${NAME}.${XHASH}" &> /dev/null;
+		fi
+	fi
+}
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # update or clone repo
 function get_git()
 {
 	NAME="$(echo ${URL} | sed -e 's/\.git//g' | sed -e 's/.*:\|.*\///g')";
 
+	HASH=$(echo "${URL}" | sha1sum | awk '{print $1}');
 
-	mkdir "${NAME}" &> /dev/null;
-	touch "${NAME}" &> /dev/null;
-	cd "${NAME}" &> /dev/null;
+	NAME_BARE="${NAME}.${HASH}.git";
 
 
+	stupid_compatibility; # kill me
+
+
+	mkdir "${NAME}.${HASH}" &> /dev/null;
+	touch "${NAME}.${HASH}" &> /dev/null;
+	cd "${NAME}.${HASH}" &> /dev/null;
+
+
+# create archive or not
 	FLAG_REPO_UPDATE='0';
 
 
@@ -208,7 +285,7 @@ function get_git()
 
 
 # if repo not exist try unpack last archive and update
-	if [ ! -e "${NAME}" ];
+	if [ ! -e "${NAME_BARE}" ];
 	then
 		ARCH="$(ls -1 --color=none | grep '\.tar' | sort -n | tail -n 1)";
 
@@ -220,62 +297,65 @@ function get_git()
 			if [ "${?}" != "0" ];
 			then
 				echo "$(get_time)[!]error unpack, skip it...";
-				rm -rf "${NAME}" &> /dev/null;
+				rm -rf "${NAME_BARE}" &> /dev/null;
 			fi
 		fi
 	fi
 
 
 # if repo exist try update
-	if [ -e "${NAME}" ];
+	if [ -e "${NAME_BARE}" ];
 	then
-		cd "${NAME}";
+		cd "${NAME_BARE}";
 		echo "$(get_time)update repository \"${NAME}\" from \"${URL}\"";
 
+		while true;
+		do
+
+
 # is git repo?
-		git branch &> /dev/null;
-		if [ "${?}" == "0" ];
-		then
+			git branch &> /dev/null;
+			if [ "${?}" != "0" ];
+			then
+				echo "$(get_time)[!]error update, is NOT repository, skip it...";
+				break;
+			fi
+
 
 # is not modify?
-			if [ "$(git status --porcelain | wc -l)" == "0" ];
-			then
+#			if [ "$(git status --porcelain | wc -l)" != "0" ];
+#			then
+#				echo "$(get_time)[!]error update, this repository modify, skip it...";
+#				break;
+#			fi
+
 
 # repo URL and exist repo URL equal?
-				URL_CUR=$(git config -l | grep '^remote.origin.url' | sed -e 's/remote.origin.url=//g');
-				if [ "${URL}" == "${URL_CUR}" ];
-				then
-					FLAG_FETCH='1';
-# fsck repo if enabled
-					if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
-					then
-						git fsck --full &> /dev/null;
-						if [ "${?}" != "0" ];
-						then
-							FLAG_FETCH='0';
-							echo "$(get_time)[!]error update, fsck error, skip it...";
-						fi
-					fi
-# fetch all
-					if [ "${FLAG_FETCH}" == "1" ];
-					then
-						git fetch --all -p &> /dev/null;
-						if [ "${?}" == "0" ];
-						then
-							FLAG_CLONE='0';
-						else
-							echo "$(get_time)[!]error update, fetch error, skip it...";
-						fi
-					fi
-				else
-					echo "$(get_time)[!]error update, alien remote.origin.url, skip it...";
-				fi
-			else
-				echo "$(get_time)[!]error update, this repository modify, skip it...";
+			URL_CUR=$(git config -l | grep '^remote.origin.url' | sed -e 's/remote.origin.url=//g');
+			if [ "${URL}" != "${URL_CUR}" ];
+			then
+				echo "$(get_time)[!]error update, alien remote.origin.url, skip it...";
+				break;
 			fi
-		else
-			echo "$(get_time)[!]error update, is NOT repository, skip it...";
-		fi
+
+
+# fsck repo if enabled
+			if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
+			then
+				git fsck --full &> /dev/null;
+				if [ "${?}" != "0" ];
+				then
+					echo "$(get_time)[!]error update, fsck error, skip it...";
+					break;
+				fi
+			fi
+
+
+			FLAG_CLONE='0';
+
+
+			break;
+		done
 
 		cd ..;
 	fi
@@ -284,9 +364,10 @@ function get_git()
 # clone git repo
 	if [ "${FLAG_CLONE}" != "0" ];
 	then
-		rm -rf "${NAME}" &> /dev/null;
+		rm -rf "${NAME}.git"; &> /dev/null; # for old versions compatibility
+		rm -rf "${NAME_BARE}" &> /dev/null;
 		echo "$(get_time)clone repository \"${NAME}\" from \"${URL}\"";
-		git clone "${URL}" "${NAME}" &> /dev/null;
+		git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null;
 		if [ "${?}" != "0" ];
 		then
 			echo "$(get_time)ERROR: unknown error";
@@ -298,112 +379,29 @@ function get_git()
 	fi
 
 
-	touch "${NAME}" &> /dev/null;
-	cd "${NAME}";
+	touch "${NAME_BARE}" &> /dev/null;
+	cd "${NAME_BARE}";
 
 
-# save default branch, may be 'master'
-	DEFAULT_BRANCH="$(git branch | grep '^\*' | sed -e 's/\*\ //g')";
-
-
-# choice all branches if BRANCH_LIST is empty
-	if [ "${BRANCH_LIST}" == "" ];
+# fetch all
+#	OLD_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
+	OLD_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
+	git fetch --all --tags -p &> /dev/null;
+	if [ "${?}" != "0" ];
 	then
-		if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
-		then
-			echo "$(get_time)get_git(): detect empty BRANCH_LIST";
-		fi
-
-		for BRANCH in $(git branch -r | sed -e 's/\ *origin\///g' | grep -v '\ ->');
-		do
-			if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
-			then
-				echo "$(get_time)get_git(): add branch:\"${BRANCH}\"";
-			fi
-
-			if [ "${BRANCH_LIST}" != "" ];
-			then
-				BRANCH_LIST="${BRANCH_LIST} ";
-			fi
-			BRANCH_LIST="${BRANCH_LIST}${BRANCH}";
-		done
+		echo "$(get_time)ERROR: fetch error...";
+		echo;
+		echo;
+		exit 1;
 	fi
 
 
-	if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
+#	NEW_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
+	NEW_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
+	if [ "${OLD_LAST_COMMIT_HASH}" != "${NEW_LAST_COMMIT_HASH}" ];
 	then
-		echo "$(get_time)get_git(): use BRANCH_LIST:\"${BRANCH_LIST}\"";
+		FLAG_REPO_UPDATE='1';
 	fi
-
-
-# update or clone branches
-	for BRANCH in ${BRANCH_LIST};
-	do
-		if [ "${BRANCH}" == "" ];
-		then
-			continue;
-		fi
-
-
-		FLAG_GLOBAL_FOUND="$(git branch -r | sed -e 's/\ *origin\///g' | grep "^${BRANCH}$" | wc -l)";
-		if [ "${FLAG_GLOBAL_FOUND}" == "0" ];
-		then
-			echo "$(get_time)    ignore branch \"${BRANCH}\"";
-			continue;
-		fi
-
-
-		FLAG_LOCAL_FOUND="$(git branch | sed -e 's/\*\ //g' | grep "${BRANCH}" | wc -l)";
-		if [ "${FLAG_LOCAL_FOUND}" == "1" ];
-		then
-			echo "$(get_time)    update branch \"${BRANCH}\"";
-			git checkout "${BRANCH}" &> /dev/null;
-			if [ "${?}" != "0" ];
-			then
-				echo "$(get_time)ERROR: unknown error";
-				echo;
-				echo;
-				exit 1;
-			fi
-
-
-			LAST_COMMIT_HASH="$(git log -n 1 --format=%H)";
-
-
-			git pull origin "${BRANCH}" &> /dev/null;
-			if [ "${?}" != "0" ];
-			then
-				echo "$(get_time)ERROR: unknown error";
-				echo;
-				echo;
-				exit 1;
-			fi
-
-
-			LAST_COMMIT_HASH_CUR="$(git log -n 1 --format=%H)";
-
-
-			if [ "${LAST_COMMIT_HASH}" != "${LAST_COMMIT_HASH_CUR}" ];
-			then
-				FLAG_REPO_UPDATE='1';
-			fi
-		else
-			echo "$(get_time)    clone branch \"${BRANCH}\"";
-			git checkout -b "${BRANCH}" remotes/origin/"${BRANCH}" &> /dev/null;
-			if [ "${?}" != "0" ];
-			then
-				echo "$(get_time)ERROR: unknown error";
-				echo;
-				echo;
-				exit 1;
-			fi
-			FLAG_REPO_UPDATE='1';
-		fi
-	done
-
-
-# back to default branch
-	git checkout "${DEFAULT_BRANCH}" &> /dev/null;
 
 
 # garbage collect cache repository
@@ -421,18 +419,18 @@ function get_git()
 	then
 		echo "$(get_time)repository \"${NAME}\" NOT modify";
 	else
-		pack "${NAME}";
+		pack;
 	fi
 
 
 # delete clone repository
 	if [ "${GIT_BACKUP_FLAG_REPO_CACHE}" == "0" ];
 	then
-		rm -rf "${NAME}" &> /dev/null;
+		rm -rf "${NAME_BARE}" &> /dev/null;
 	fi
 
 
-	KILL_RING_PATH="${GIT_BACKUP_DIR}/${NAME}";
+	KILL_RING_PATH="${GIT_BACKUP_DIR}/${NAME}.${HASH}";
 	KILL_RING_MAX_ITEM_COUNT="${GIT_BACKUP_MAX_ITEM_COUNT}";
 	kill_ring;
 
@@ -450,42 +448,7 @@ function parse()
 
 	while read -r REPO_ITEM;
 	do
-
-		URL='';
-		BRANCH_LIST='';
-		BRANCH_INDEX=1;
-
-		while true;
-		do
-			BRANCH=$(echo "${REPO_ITEM}" | awk -F' ' "{print \$${BRANCH_INDEX}}");
-
-			if [ "${BRANCH}" == "" ];
-			then
-				break;
-			fi
-
-
-			if [ "${BRANCH_INDEX}" == "1" ];
-			then
-				URL="${BRANCH}";
-			else
-				if [ "${BRANCH_LIST}" != "" ];
-				then
-					BRANCH_LIST="${BRANCH_LIST} ";
-				fi
-				BRANCH_LIST="${BRANCH_LIST} ${BRANCH}";
-			fi
-
-
-			if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
-			then
-				echo "$(get_time)parse(): BRANCH=\"${BRANCH}\"";
-			fi
-
-
-			(( BRANCH_INDEX++ ));
-		done
-
+		URL=$(echo "${REPO_ITEM}" | awk -F' ' "{print $1}"); # for old versions compatibility
 
 		if [ "${URL}" != "" ];
 		then
@@ -501,10 +464,10 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.1.5";
+	echo "$(get_time)run git_backup v0.2.0";
 
 
-	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs';
+	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
 	check_prog;
 
 
