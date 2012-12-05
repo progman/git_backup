@@ -98,8 +98,16 @@ function kill_ring()
 		return;
 	fi
 
+	if [ ! -e "${KILL_RING_PATH}" ];
+	then
+		return;
+	fi
 
-	KILL_RING_CUR_ITEM_COUNT=$(ls -1 "${KILL_RING_PATH}" | grep '\.tar' | wc -l);
+	TMPFILE="$(mktemp)";
+
+	find "${KILL_RING_PATH}" -maxdepth 1 -type f -iname '*\.tar*' -printf '%T@ %p\n' | sort -n &> "${TMPFILE}";
+
+	KILL_RING_CUR_ITEM_COUNT=$(cat "${TMPFILE}" | wc -l);
 
 	if [ "${KILL_RING_CUR_ITEM_COUNT}" -gt "${KILL_RING_MAX_ITEM_COUNT}" ];
 	then
@@ -118,8 +126,18 @@ function kill_ring()
 		fi
 
 
-		ls -1 --color=none "${KILL_RING_PATH}" | grep '\.tar' | sort -n | head -n "${KILL_RING_ITEM_COUNT}" | xargs rm -rf --;
+		while read -r TIMESTAMP FILENAME;
+		do
+			if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
+			then
+				echo "rm -rf \"${FILENAME}\"";
+			fi
+			rm -rf "${FILENAME}";
+
+		done < "${TMPFILE}" | head -n "${KILL_RING_ITEM_COUNT}";
 	fi
+
+	rm -rf "${TMPFILE}" &> /dev/null;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # make archive
