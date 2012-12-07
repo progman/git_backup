@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.2.2
+# 0.2.3
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -438,11 +438,14 @@ function get_git()
 
 
 # pack modify repository
-	if [ "${FLAG_REPO_UPDATE}" == "0" ] && [ "${GIT_BACKUP_FLAG_FORCE_PACK}" != "1" ];
+	if [ "${FLAG_REPO_UPDATE}" == "1" ] || [ "${GIT_BACKUP_FLAG_FORCE_PACK}" == "1" ];
 	then
-		echo "$(get_time)repository \"${NAME}\" NOT modify";
-	else
 		pack;
+	else
+		if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
+		then
+			echo "$(get_time)repository \"${NAME}\" NOT modify";
+		fi
 	fi
 
 
@@ -487,7 +490,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.2.2";
+	echo "$(get_time)run git_backup v0.2.3";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
