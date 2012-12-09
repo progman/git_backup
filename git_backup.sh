@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.2.3
+# 0.2.4
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -111,7 +111,10 @@ function kill_ring()
 
 	if [ "${KILL_RING_CUR_ITEM_COUNT}" -gt "${KILL_RING_MAX_ITEM_COUNT}" ];
 	then
-		echo "$(get_time)time to kill old...";
+		if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
+		then
+			echo "$(get_time)time to kill old...";
+		fi
 
 		KILL_RING_ITEM_COUNT="${KILL_RING_CUR_ITEM_COUNT}";
 
@@ -490,7 +493,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.2.3";
+	echo "$(get_time)run git_backup v0.2.4";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
