@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.2.4
+# 0.2.5
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -103,11 +103,11 @@ function kill_ring()
 		return;
 	fi
 
-	TMPFILE1="$(mktemp)";
+	TMPFILE="$(mktemp)";
 
-	find "${KILL_RING_PATH}" -maxdepth 1 -type f -iname '*\.tar*' -printf '%T@ %p\n' | sort -n &> "${TMPFILE1}";
+	find "${KILL_RING_PATH}" -maxdepth 1 -type f -iname '*\.tar*' -printf '%T@ %p\n' | sort -n &> "${TMPFILE}";
 
-	KILL_RING_CUR_ITEM_COUNT=$(cat "${TMPFILE1}" | wc -l);
+	KILL_RING_CUR_ITEM_COUNT=$(cat "${TMPFILE}" | wc -l);
 
 	if [ "${KILL_RING_CUR_ITEM_COUNT}" -gt "${KILL_RING_MAX_ITEM_COUNT}" ];
 	then
@@ -129,23 +129,17 @@ function kill_ring()
 		fi
 
 
-		TMPFILE2="$(mktemp)";
-		cat "${TMPFILE1}" | head -n "${KILL_RING_ITEM_COUNT}" > "${TMPFILE2}";
-
-		while read -r TIMESTAMP FILENAME;
+		head -n "${KILL_RING_ITEM_COUNT}" "${TMPFILE}" | while read -r TIMESTAMP FILENAME;
 		do
 			if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
 			then
 				echo "rm -rf \"${FILENAME}\"";
 			fi
 			rm -rf "${FILENAME}";
-
-		done < "${TMPFILE2}";
-
-		rm -rf "${TMPFILE2}" &> /dev/null;
+		done;
 	fi
 
-	rm -rf "${TMPFILE1}" &> /dev/null;
+	rm -rf "${TMPFILE}" &> /dev/null;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # make archive
@@ -493,7 +487,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.2.4";
+	echo "$(get_time)run git_backup v0.2.5";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
