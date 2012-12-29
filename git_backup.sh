@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.2.5
+# 0.2.6
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -199,6 +199,7 @@ function pack()
 	ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME_BARE}";
 	if [ "${?}" != "0" ];
 	then
+		rm -rf "${FILE}.tmp" &> /dev/null;
 		echo "$(get_time)[!]error pack repository archive";
 		echo;
 		echo;
@@ -487,7 +488,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.2.5";
+	echo "$(get_time)run git_backup v0.2.6";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
