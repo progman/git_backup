@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.2.6
+# 0.2.7
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -428,7 +428,7 @@ function get_git()
 # garbage collect cache repository
 	if [ "${GIT_BACKUP_FLAG_REPO_GC}" == "1" ] && [ "${GIT_BACKUP_FLAG_REPO_CACHE}" != "0" ];
 	then
-		git gc --aggressive &> /dev/null;
+		git gc --aggressive --no-prune &> /dev/null;
 	fi
 
 
@@ -488,7 +488,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.2.6";
+	echo "$(get_time)run git_backup v0.2.7";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
