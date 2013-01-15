@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.2.7
+# 0.2.8
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -48,15 +48,15 @@ function human_size()
 		then
 			break;
 		fi
-		(( PART = SIZE / 100 ));
-		(( SIZE /= 1024 ));
+
+		(( NEW_SIZE = SIZE / 1024 ));
+		(( PART = SIZE % 1024 ));
+		SIZE=${NEW_SIZE};
+
 		(( NAME_INDEX++ ));
 	done
 
-	PART_SIZE=${#PART};
-	(( PART_SIZE-- ));
-	PART_VALUE=${PART:$PART_SIZE:1};
-
+	PART_VALUE=${PART:0:1};
 	HUMAN_SIZE="${SIZE}.${PART_VALUE} ${NAME[$NAME_INDEX]}";
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -488,7 +488,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.2.7";
+	echo "$(get_time)run git_backup v0.2.8";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
