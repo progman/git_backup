@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.2.8
+# 0.2.9
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -44,20 +44,36 @@ function human_size()
 
 	while true;
 	do
-		if [ ${SIZE} -le 1024 ];
+		EXPR="scale=1; ${SIZE} / (1024 ^ ${NAME_INDEX})";
+		X=$(echo "${EXPR}" | bc);
+		Y=$(echo "${X}" | sed -e 's/\..*//g');
+
+		if [ ${Y} -le 1024 ];
 		then
 			break;
 		fi
 
-		(( NEW_SIZE = SIZE / 1024 ));
-		(( PART = SIZE % 1024 ));
-		SIZE=${NEW_SIZE};
-
 		(( NAME_INDEX++ ));
 	done
 
-	PART_VALUE=${PART:0:1};
-	HUMAN_SIZE="${SIZE}.${PART_VALUE} ${NAME[$NAME_INDEX]}";
+	HUMAN_SIZE="${X} ${NAME[$NAME_INDEX]}";
+
+#	while true;
+#	do
+#		if [ ${SIZE} -le 1024 ];
+#		then
+#			break;
+#		fi
+#
+#		(( NEW_SIZE = SIZE / 1024 ));
+#		(( PART = SIZE % 1024 ));
+#		SIZE=${NEW_SIZE};
+#
+#		(( NAME_INDEX++ ));
+#	done
+#
+#	PART_VALUE=${PART:0:1};
+#	HUMAN_SIZE="${SIZE}.${PART_VALUE} ${NAME[$NAME_INDEX]}";
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # get size of tar backup files
@@ -488,7 +504,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.2.8 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.2.9 (https://github.com/progman/git_backup)";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
@@ -534,7 +550,7 @@ function main()
 	parse;
 
 
-	if [ "${GIT_BACKUP_FLAG_VIEW_SIZE}" != "0" ];
+	if [ "${GIT_BACKUP_FLAG_VIEW_SIZE}" != "0" ] && [ "$(which bc)" != "" ];
 	then
 		get_size_min;
 		human_size;
