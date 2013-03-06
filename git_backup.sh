@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.2.9
+# 0.3.0
 # Alexey Potehin http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -407,7 +407,7 @@ function get_git()
 		git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null;
 		if [ "${?}" != "0" ];
 		then
-			echo "$(get_time)ERROR: unknown error";
+			echo "$(get_time)ERROR: clone error...";
 			echo;
 			echo;
 			exit 1;
@@ -504,7 +504,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.2.9 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.3.0 (https://github.com/progman/git_backup)";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
@@ -516,7 +516,15 @@ function main()
 
 	if [ "${GIT_BACKUP_REPO_LIST}" == "" ];
 	then
-		echo "$(get_time)ERROR: variable \"GIT_BACKUP_REPO_LIST\" not found...";
+		echo "$(get_time)ERROR: variable \"GIT_BACKUP_REPO_LIST\" is not set...";
+		echo;
+		echo;
+		exit 1;
+	fi
+
+	if [ ! -e "${GIT_BACKUP_REPO_LIST}" ];
+	then
+		echo "$(get_time)ERROR: file \"GIT_BACKUP_REPO_LIST\" not found...";
 		echo;
 		echo;
 		exit 1;
@@ -524,7 +532,7 @@ function main()
 
 	if [ "${GIT_BACKUP_DIR}" == "" ];
 	then
-		echo "$(get_time)ERROR: variable \"GIT_BACKUP_DIR\" not found...";
+		echo "$(get_time)ERROR: variable \"GIT_BACKUP_DIR\" is not set...";
 		echo;
 		echo;
 		exit 1;
