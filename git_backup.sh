@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.0
+# 0.3.1
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -441,6 +441,20 @@ function get_git()
 	fi
 
 
+# fsck repo if enabled
+	if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
+	then
+		git fsck --full &> /dev/null;
+		if [ "${?}" != "0" ];
+		then
+			echo "$(get_time)ERROR: fsck error...";
+			echo;
+			echo;
+			exit 1;
+		fi
+	fi
+
+
 # garbage collect cache repository
 	if [ "${GIT_BACKUP_FLAG_REPO_GC}" == "1" ] && [ "${GIT_BACKUP_FLAG_REPO_CACHE}" != "0" ];
 	then
@@ -504,7 +518,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.3.0 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.3.1 (https://github.com/progman/git_backup)";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
