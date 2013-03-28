@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.1
+# 0.3.2
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -19,7 +19,7 @@ function check_prog()
 	do
 		if [ "$(which ${i})" == "" ];
 		then
-			echo "$(get_time)ERROR: you must install \"${i}\"...";
+			echo "$(get_time)[!]FATAL: you must install \"${i}\"...";
 			echo;
 			echo;
 			exit 1;
@@ -216,12 +216,13 @@ function pack()
 	if [ "${?}" != "0" ];
 	then
 		rm -rf "${FILE}.tmp" &> /dev/null;
-		echo "$(get_time)[!]error pack repository archive";
-		echo;
-		echo;
-		exit 1;
+		echo "$(get_time)[!]ERROR: pack repository archive error...";
+#		echo;
+#		echo;
+#		exit 1;
+	else
+		mv "${FILE}.tmp" "${FILE}";
 	fi
-	mv "${FILE}.tmp" "${FILE}";
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # for old versions compatibility, auto convert from old format
@@ -407,10 +408,10 @@ function get_git()
 		git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null;
 		if [ "${?}" != "0" ];
 		then
-			echo "$(get_time)ERROR: clone error...";
-			echo;
-			echo;
-			exit 1;
+			echo "$(get_time)[!]ERROR: clone error, skip repo...";
+#			echo;
+#			echo;
+			return;
 		fi
 		FLAG_REPO_UPDATE='1';
 	fi
@@ -426,10 +427,10 @@ function get_git()
 	git fetch --all --tags -p &> /dev/null;
 	if [ "${?}" != "0" ];
 	then
-		echo "$(get_time)ERROR: fetch error...";
-		echo;
-		echo;
-		exit 1;
+		echo "$(get_time)[!]ERROR: fetch error, skip repo...";
+#		echo;
+#		echo;
+		return;
 	fi
 
 
@@ -447,10 +448,10 @@ function get_git()
 		git fsck --full &> /dev/null;
 		if [ "${?}" != "0" ];
 		then
-			echo "$(get_time)ERROR: fsck error...";
-			echo;
-			echo;
-			exit 1;
+			echo "$(get_time)[!]ERROR: fsck error, skip repo...";
+#			echo;
+#			echo;
+			return;
 		fi
 	fi
 
@@ -518,7 +519,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.3.1 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.3.2 (https://github.com/progman/git_backup)";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
@@ -530,7 +531,7 @@ function main()
 
 	if [ "${GIT_BACKUP_REPO_LIST}" == "" ];
 	then
-		echo "$(get_time)ERROR: variable \"GIT_BACKUP_REPO_LIST\" is not set...";
+		echo "$(get_time)[!]FATAL: variable \"GIT_BACKUP_REPO_LIST\" is not set...";
 		echo;
 		echo;
 		exit 1;
@@ -538,7 +539,7 @@ function main()
 
 	if [ ! -e "${GIT_BACKUP_REPO_LIST}" ];
 	then
-		echo "$(get_time)ERROR: file \"GIT_BACKUP_REPO_LIST\" not found...";
+		echo "$(get_time)[!]FATAL: file \"GIT_BACKUP_REPO_LIST\" not found...";
 		echo;
 		echo;
 		exit 1;
@@ -546,7 +547,7 @@ function main()
 
 	if [ "${GIT_BACKUP_DIR}" == "" ];
 	then
-		echo "$(get_time)ERROR: variable \"GIT_BACKUP_DIR\" is not set...";
+		echo "$(get_time)[!]FATAL: variable \"GIT_BACKUP_DIR\" is not set...";
 		echo;
 		echo;
 		exit 1;
@@ -556,7 +557,7 @@ function main()
 
 	if [ ! -d "${GIT_BACKUP_DIR}" ];
 	then
-		echo "$(get_time)ERROR: dir \"GIT_BACKUP_DIR\" not found...";
+		echo "$(get_time)[!]FATAL: dir \"GIT_BACKUP_DIR\" not found...";
 		echo;
 		echo;
 		exit 1;
@@ -595,7 +596,7 @@ function main()
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 main;
 
-echo "$(get_time)Ok.";
+echo "$(get_time)Done.";
 echo;
 echo;
 exit 0;
