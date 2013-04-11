@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.2
+# 0.3.3
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -409,6 +409,7 @@ function get_git()
 		if [ "${?}" != "0" ];
 		then
 			echo "$(get_time)[!]ERROR: clone error, skip repo...";
+			cd ..;
 #			echo;
 #			echo;
 			return;
@@ -428,6 +429,8 @@ function get_git()
 	if [ "${?}" != "0" ];
 	then
 		echo "$(get_time)[!]ERROR: fetch error, skip repo...";
+		cd ..;
+		cd ..;
 #		echo;
 #		echo;
 		return;
@@ -449,6 +452,8 @@ function get_git()
 		if [ "${?}" != "0" ];
 		then
 			echo "$(get_time)[!]ERROR: fsck error, skip repo...";
+			cd ..;
+			cd ..;
 #			echo;
 #			echo;
 			return;
@@ -519,7 +524,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.3.2 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.3.3 (https://github.com/progman/git_backup)";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
