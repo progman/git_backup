@@ -8,5 +8,5 @@ Circular buffer for archives (default disabled).
 
 
 1) Get this: git clone git://github.com/progman/git_backup.git
-2) View and run git_backup_example.sh for simple start
-3) Just use it!
+2) Just run git_backup.example.sh for simple start
+3) Use it!
