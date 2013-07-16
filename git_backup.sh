@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.4
+# 0.3.5
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -526,16 +526,12 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.3.4 (https://github.com/progman/git_backup)";
-
-
-	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
+# check minimal depends tools
+	CHECK_PROG_LIST='cat kill echo';
 	check_prog;
 
 
-	HEAD_DATE="$(date +'%s')";
-
-
+# check race condition
 	if [ "${GIT_BACKUP_PIDFILE}" == "" ];
 	then
 		GIT_BACKUP_PIDFILE="/var/run/git_backup.pid";
@@ -547,13 +543,26 @@ function main()
 		kill -0 "${PID}" &> /dev/null;
 		if [ "${?}" == "0" ];
 		then
-			echo "$(get_time)[!]FATAL: program already run...";
-			exit 1;
+			exit 1; # program already run
 		fi
 	fi
 	echo "${BASHPID}" > "${GIT_BACKUP_PIDFILE}";
 
 
+# view program name
+	echo "$(get_time)run git_backup v0.3.5 (https://github.com/progman/git_backup)";
+
+
+# check depends tools
+	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
+	check_prog;
+
+
+# get start time
+	HEAD_DATE="$(date +'%s')";
+
+
+# check variables
 	if [ "${GIT_BACKUP_REPO_LIST}" == "" ];
 	then
 		echo "$(get_time)[!]FATAL: variable \"GIT_BACKUP_REPO_LIST\" is not set...";
@@ -595,9 +604,11 @@ function main()
 	cd "${GIT_BACKUP_DIR}";
 
 
+# do it
 	parse;
 
 
+# view stats
 	if [ "${GIT_BACKUP_FLAG_VIEW_SIZE}" != "0" ] && [ "$(which bc)" != "" ];
 	then
 		get_size_min;
@@ -612,9 +623,11 @@ function main()
 	fi
 
 
+# get stop time
 	TAIL_DATE="$(date +'%s')";
 
 
+# view run time
 	(( TAIL_DATE -= HEAD_DATE ));
 	echo "$(get_time)work time: ${TAIL_DATE} secs";
 }
