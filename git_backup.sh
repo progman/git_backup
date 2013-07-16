@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.5
+# 0.3.6
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -426,7 +426,7 @@ function get_git()
 # fetch all
 #	OLD_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
 	OLD_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
-	git fetch --all --tags -p &> /dev/null;
+	git fetch --all -p &> /dev/null;
 	if [ "${?}" != "0" ];
 	then
 		echo "$(get_time)[!]ERROR: fetch error, skip repo...";
@@ -550,7 +550,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)run git_backup v0.3.5 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.3.6 (https://github.com/progman/git_backup)";
 
 
 # check depends tools
