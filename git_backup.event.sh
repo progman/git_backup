@@ -30,6 +30,11 @@ function main()
 	NEW_MIN=$(date '+%M' | sed -e 's/^0//g');
 	(( NEW_MIN += 1 ));
 
+	if [ "${NEW_MIN}" == "60" ];
+	then
+		NEW_MIN="0";
+	fi
+
 
 	while true;
 	do
