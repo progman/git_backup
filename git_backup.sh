@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.3
+# 0.3.4
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # view current time
@@ -30,7 +30,7 @@ function check_prog()
 # do beep
 function alarm()
 {
-	if [ "$(which beep)" != "" ];
+	if [ "$(which beep)" != "" ] && [ "${GIT_BACKUP_FLAG_ALARM}" == "1" ];
 	then
 		beep -r 1 -f 3000;
 	fi
@@ -465,6 +465,7 @@ function get_git()
 	if [ "${GIT_BACKUP_FLAG_REPO_GC}" == "1" ] && [ "${GIT_BACKUP_FLAG_REPO_CACHE}" != "0" ];
 	then
 		git gc --aggressive --no-prune &> /dev/null;
+		git repack -ad &> /dev/null;
 	fi
 
 
@@ -524,7 +525,7 @@ function parse()
 # general function
 function main()
 {
-	echo "$(get_time)run git_backup v0.3.3 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.3.4 (https://github.com/progman/git_backup)";
 
 
 	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
@@ -532,6 +533,24 @@ function main()
 
 
 	HEAD_DATE="$(date +'%s')";
+
+
+	if [ "${GIT_BACKUP_PIDFILE}" == "" ];
+	then
+		GIT_BACKUP_PIDFILE="/var/run/git_backup.pid";
+	fi
+	if [ -e "${GIT_BACKUP_PIDFILE}" ];
+	then
+		PID="$(cat ${GIT_BACKUP_PIDFILE})";
+
+		kill -0 "${PID}" &> /dev/null;
+		if [ "${?}" == "0" ];
+		then
+			echo "$(get_time)[!]FATAL: program already run...";
+			exit 1;
+		fi
+	fi
+	echo "${BASHPID}" > "${GIT_BACKUP_PIDFILE}";
 
 
 	if [ "${GIT_BACKUP_REPO_LIST}" == "" ];
