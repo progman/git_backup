@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.6
+# 0.3.7
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -16,6 +16,7 @@ function get_time()
 # check depends
 function check_prog()
 {
+	FLAG_OK=1;
 	for i in ${CHECK_PROG_LIST};
 	do
 		if [ "$(which ${i})" == "" ];
@@ -23,9 +24,12 @@ function check_prog()
 			echo "$(get_time)[!]FATAL: you must install \"${i}\"...";
 			echo;
 			echo;
-			exit 1;
+			FLAG_OK=0;
+			break;
 		fi
 	done
+
+	return ${FLAG_OK};
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # do beep
@@ -527,8 +531,11 @@ function parse()
 function main()
 {
 # check minimal depends tools
-	CHECK_PROG_LIST='cat kill echo';
-	check_prog;
+	check_prog "cat kill echo";
+	if [ "${?}" == "0" ];
+	then
+		exit 1;
+	fi
 
 
 # check race condition
@@ -550,12 +557,15 @@ function main()
 
 
 # view program name
-	echo "$(get_time)run git_backup v0.3.6 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.3.7 (https://github.com/progman/git_backup)";
 
 
 # check depends tools
-	CHECK_PROG_LIST='awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum';
-	check_prog;
+	check_prog "awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum";
+	if [ "${?}" == "0" ];
+	then
+		exit 1;
+	fi
 
 
 # get start time
