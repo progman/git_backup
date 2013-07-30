@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.7
+# 0.3.8
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -16,7 +16,7 @@ function get_time()
 # check depends
 function check_prog()
 {
-	FLAG_OK=1;
+	local FLAG_OK=1;
 	for i in ${CHECK_PROG_LIST};
 	do
 		if [ "$(which ${i})" == "" ];
@@ -44,14 +44,23 @@ function alarm()
 # convert SIZE to human readable string
 function human_size()
 {
-	NAME=( "B" "kB" "MB" "GB" "TB" "PB" "EB" "ZB" "YB" );
-	NAME_INDEX=0;
+	local SIZE="${1}";
+
+	if [ "$(which bc)" == "" ];
+	then
+		echo "${SIZE} B";
+		return;
+	fi
+
+
+	local NAME=( "B" "kB" "MB" "GB" "TB" "PB" "EB" "ZB" "YB" );
+	local NAME_INDEX=0;
 
 	while true;
 	do
-		EXPR="scale=1; ${SIZE} / (1024 ^ ${NAME_INDEX})";
-		X=$(echo "${EXPR}" | bc);
-		Y=$(echo "${X}" | sed -e 's/\..*//g');
+		local EXPR="scale=1; ${SIZE} / (1024 ^ ${NAME_INDEX})";
+		local X=$(echo "${EXPR}" | bc);
+		local Y=$(echo "${X}" | sed -e 's/\..*//g');
 
 		if [ ${Y} -le 1024 ];
 		then
@@ -61,7 +70,8 @@ function human_size()
 		(( NAME_INDEX++ ));
 	done
 
-	HUMAN_SIZE="${X} ${NAME[$NAME_INDEX]}";
+
+	echo "${X} ${NAME[$NAME_INDEX]}";
 
 #	while true;
 #	do
@@ -84,31 +94,35 @@ function human_size()
 # get size of tar backup files
 function get_size_min()
 {
-	TMPFILE=$(mktemp);
+	local TMPFILE=$(mktemp);
 	find ./ -maxdepth 2 -type f -iname '*\.tar*' -printf '%s\n' > "${TMPFILE}";
 
-	SIZE=0;
+	local SIZE=0;
 	while read -r ITEM_SIZE;
 	do
 		(( SIZE += ITEM_SIZE ));
 	done < "${TMPFILE}";
 
 	rm -rf "${TMPFILE}" &> /dev/null;
+
+	echo "${SIZE}";
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # get size of tar backup files + cache files
 function get_size_max()
 {
-	TMPFILE=$(mktemp);
+	local TMPFILE=$(mktemp);
 	find ./ -type f -printf '%s\n' > "${TMPFILE}";
 
-	SIZE=0;
+	local SIZE=0;
 	while read -r ITEM_SIZE;
 	do
 		(( SIZE += ITEM_SIZE ));
 	done < "${TMPFILE}";
 
 	rm -rf "${TMPFILE}" &> /dev/null;
+
+	echo "${SIZE}";
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # kill old backups (default disable)
@@ -557,7 +571,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)run git_backup v0.3.7 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.3.8 (https://github.com/progman/git_backup)";
 
 
 # check depends tools
@@ -619,15 +633,13 @@ function main()
 
 
 # view stats
-	if [ "${GIT_BACKUP_FLAG_VIEW_SIZE}" != "0" ] && [ "$(which bc)" != "" ];
+	if [ "${GIT_BACKUP_FLAG_VIEW_SIZE}" != "0" ];
 	then
-		get_size_min;
-		human_size;
-		HUMAN_SIZE_MIN="${HUMAN_SIZE}";
+		local SIZE_MIN=$(get_size_min);
+		local HUMAN_SIZE_MIN="$(human_size ${SIZE_MIN})";
 
-		get_size_max;
-		human_size;
-		HUMAN_SIZE_MAX="${HUMAN_SIZE}";
+		local SIZE_MAX=$(get_size_max);
+		local HUMAN_SIZE_MAX="$(human_size ${SIZE_MAX})";
 
 		echo "$(get_time)total backup size min/max: ${HUMAN_SIZE_MIN}/${HUMAN_SIZE_MAX}";
 	fi
