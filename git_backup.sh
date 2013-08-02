@@ -62,7 +62,7 @@ function human_size()
 		local X=$(echo "${EXPR}" | bc);
 		local Y=$(echo "${X}" | sed -e 's/\..*//g');
 
-		if [ ${Y} -le 1024 ]; # ${Y} <= 1024
+		if [ ${Y} -lt 1024 ]; # ${Y} < 1024
 		then
 			break;
 		fi
