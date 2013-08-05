@@ -44,11 +44,18 @@ function alarm()
 # convert SIZE to human readable string
 function human_size()
 {
-	local SIZE="${1}";
+	local SIZE="$(echo "${1}" | sed -e 's/^[-+]//g')";
 
-	if [ "$(which bc)" == "" ] || [ ${1} -lt 1024 ]; # ${1} < 1024
+	local SIGN="";
+	if [ "${1:0:1}" == "-" ];
 	then
-		echo "${SIZE} B";
+		SIGN="-";
+	fi
+
+
+	if [ "$(which bc)" == "" ] || [ ${SIZE} -lt 1024 ]; # ${SIZE} < 1024
+	then
+		echo "${SIGN}${SIZE} B";
 		return;
 	fi
 
@@ -71,7 +78,7 @@ function human_size()
 	done
 
 
-	echo "${X} ${NAME[$NAME_INDEX]}";
+	echo "${SIGN}${X} ${NAME[$NAME_INDEX]}";
 
 #	while true;
 #	do
