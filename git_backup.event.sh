@@ -5,6 +5,7 @@
 # check depends
 function check_prog()
 {
+	local FLAG_OK=1;
 	for i in ${CHECK_PROG_LIST};
 	do
 		if [ "$(which ${i})" == "" ];
@@ -12,9 +13,12 @@ function check_prog()
 			echo "$(get_time)[!]FATAL: you must install \"${i}\"...";
 			echo;
 			echo;
-			exit 1;
+			FLAG_OK=0;
+			break;
 		fi
 	done
+
+	return ${FLAG_OK};
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # general function
@@ -23,8 +27,12 @@ function main()
 	touch "${EVENTFILE}";
 
 
-	CHECK_PROG_LIST='date sed printf';
-	check_prog;
+# check depends tools
+	check_prog "date sed printf";
+	if [ "${?}" == "0" ];
+	then
+		exit 1;
+	fi
 
 
 	NEW_MIN=$(date '+%M' | sed -e 's/^0//g');
