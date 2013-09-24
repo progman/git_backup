@@ -149,7 +149,7 @@ function kill_ring()
 
 	find "${KILL_RING_PATH}" -maxdepth 1 -type f -iname '*\.tar*' -printf '%T@ %p\n' | sort -n &> "${TMPFILE}";
 
-	KILL_RING_CUR_ITEM_COUNT=$(cat "${TMPFILE}" | wc -l);
+	KILL_RING_CUR_ITEM_COUNT=$(wc -l "${TMPFILE}" | { read a b; echo ${a}; });
 
 	if [ "${KILL_RING_CUR_ITEM_COUNT}" -gt "${KILL_RING_MAX_ITEM_COUNT}" ];
 	then
