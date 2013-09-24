@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.8
+# 0.3.9
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -101,10 +101,16 @@ function human_size()
 # get size of tar backup files
 function get_size_min()
 {
+	local SIZE=0;
+
 	local TMPFILE=$(mktemp);
+	if [ "${?}" != "0" ];
+	then
+		echo "${SIZE}";
+	fi
+
 	find ./ -maxdepth 2 -type f -iname '*\.tar*' -printf '%s\n' > "${TMPFILE}";
 
-	local SIZE=0;
 	while read -r ITEM_SIZE;
 	do
 		(( SIZE += ITEM_SIZE ));
@@ -118,10 +124,16 @@ function get_size_min()
 # get size of tar backup files + cache files
 function get_size_max()
 {
+	local SIZE=0;
+
 	local TMPFILE=$(mktemp);
+	if [ "${?}" != "0" ];
+	then
+		echo "${SIZE}";
+	fi
+
 	find ./ -type f -printf '%s\n' > "${TMPFILE}";
 
-	local SIZE=0;
 	while read -r ITEM_SIZE;
 	do
 		(( SIZE += ITEM_SIZE ));
@@ -146,6 +158,11 @@ function kill_ring()
 	fi
 
 	TMPFILE="$(mktemp)";
+	if [ "${?}" != "0" ];
+	then
+		echo "$(get_time)kill_ring(): can't make tmp file";
+		return;
+	fi
 
 	find "${KILL_RING_PATH}" -maxdepth 1 -type f -iname '*\.tar*' -printf '%T@ %p\n' | sort -n &> "${TMPFILE}";
 
@@ -529,6 +546,13 @@ function get_git()
 function parse()
 {
 	TMP="$(mktemp)";
+	if [ "${?}" != "0" ];
+	then
+		echo "$(get_time)[!]FATAL: can't make tmp file";
+		echo;
+		echo;
+		return 0;
+	fi
 
 	sed -e 's/#.*//' "${GIT_BACKUP_REPO_LIST}" | sed -e 's/\ *$//g' | sed -e '/^$/d' > "${TMP}";
 
@@ -546,6 +570,7 @@ function parse()
 
 
 	rm "${TMP}" &> /dev/null;
+	return 1;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # general function
@@ -578,7 +603,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)run git_backup v0.3.8 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.3.9 (https://github.com/progman/git_backup)";
 
 
 # check depends tools
@@ -637,6 +662,10 @@ function main()
 
 # do it
 	parse;
+	if [ "${?}" == "0" ];
+	then
+		exit 1;
+	fi
 
 
 # view stats
