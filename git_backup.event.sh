@@ -5,20 +5,16 @@
 # check depends
 function check_prog()
 {
-	local FLAG_OK=1;
-	for i in ${CHECK_PROG_LIST};
+	for i in ${1};
 	do
 		if [ "$(which ${i})" == "" ];
 		then
-			echo "$(get_time)[!]FATAL: you must install \"${i}\"...";
-			echo;
-			echo;
-			FLAG_OK=0;
-			break;
+			echo "FATAL: you must install \"${i}\"...";
+			return 1;
 		fi
 	done
 
-	return ${FLAG_OK};
+	return 0;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # general function
@@ -29,7 +25,7 @@ function main()
 
 # check depends tools
 	check_prog "date sed printf";
-	if [ "${?}" == "0" ];
+	if [ "${?}" != "0" ];
 	then
 		exit 1;
 	fi

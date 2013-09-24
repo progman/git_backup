@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.3.9
+# 0.4.0
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -16,20 +16,16 @@ function get_time()
 # check depends
 function check_prog()
 {
-	local FLAG_OK=1;
-	for i in ${CHECK_PROG_LIST};
+	for i in ${1};
 	do
 		if [ "$(which ${i})" == "" ];
 		then
 			echo "$(get_time)[!]FATAL: you must install \"${i}\"...";
-			echo;
-			echo;
-			FLAG_OK=0;
-			break;
+			return 1;
 		fi
 	done
 
-	return ${FLAG_OK};
+	return 0;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # do beep
@@ -578,7 +574,7 @@ function main()
 {
 # check minimal depends tools
 	check_prog "cat kill echo";
-	if [ "${?}" == "0" ];
+	if [ "${?}" != "0" ];
 	then
 		exit 1;
 	fi
@@ -603,12 +599,12 @@ function main()
 
 
 # view program name
-	echo "$(get_time)run git_backup v0.3.9 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.4.0 (https://github.com/progman/git_backup)";
 
 
 # check depends tools
 	check_prog "awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum";
-	if [ "${?}" == "0" ];
+	if [ "${?}" != "0" ];
 	then
 		exit 1;
 	fi
