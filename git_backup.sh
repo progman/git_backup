@@ -592,7 +592,7 @@ function main()
 		kill -0 "${PID}" &> /dev/null;
 		if [ "${?}" == "0" ];
 		then
-			return 1; # program already run
+			return 0; # program already run
 		fi
 	fi
 	echo "${BASHPID}" > "${GIT_BACKUP_PIDFILE}";
