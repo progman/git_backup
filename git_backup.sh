@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.4.0
+# 0.4.1
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -547,7 +547,7 @@ function parse()
 		echo "$(get_time)[!]FATAL: can't make tmp file";
 		echo;
 		echo;
-		return 0;
+		return 1;
 	fi
 
 	sed -e 's/#.*//' "${GIT_BACKUP_REPO_LIST}" | sed -e 's/\ *$//g' | sed -e '/^$/d' > "${TMP}";
@@ -566,7 +566,7 @@ function parse()
 
 
 	rm "${TMP}" &> /dev/null;
-	return 1;
+	return 0;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # general function
@@ -576,7 +576,7 @@ function main()
 	check_prog "cat kill echo";
 	if [ "${?}" != "0" ];
 	then
-		exit 1;
+		return 1;
 	fi
 
 
@@ -592,21 +592,21 @@ function main()
 		kill -0 "${PID}" &> /dev/null;
 		if [ "${?}" == "0" ];
 		then
-			exit 1; # program already run
+			return 1; # program already run
 		fi
 	fi
 	echo "${BASHPID}" > "${GIT_BACKUP_PIDFILE}";
 
 
 # view program name
-	echo "$(get_time)run git_backup v0.4.0 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.4.1 (https://github.com/progman/git_backup)";
 
 
 # check depends tools
 	check_prog "awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum";
 	if [ "${?}" != "0" ];
 	then
-		exit 1;
+		return 1;
 	fi
 
 
@@ -620,7 +620,7 @@ function main()
 		echo "$(get_time)[!]FATAL: variable \"GIT_BACKUP_REPO_LIST\" is not set...";
 		echo;
 		echo;
-		exit 1;
+		return 1;
 	fi
 
 	if [ ! -e "${GIT_BACKUP_REPO_LIST}" ];
@@ -628,7 +628,7 @@ function main()
 		echo "$(get_time)[!]FATAL: file \"GIT_BACKUP_REPO_LIST\" not found...";
 		echo;
 		echo;
-		exit 1;
+		return 1;
 	fi
 
 	if [ "${GIT_BACKUP_DIR}" == "" ];
@@ -636,7 +636,7 @@ function main()
 		echo "$(get_time)[!]FATAL: variable \"GIT_BACKUP_DIR\" is not set...";
 		echo;
 		echo;
-		exit 1;
+		return 1;
 	fi
 
 	mkdir -p "${GIT_BACKUP_DIR}" &> /dev/null;
@@ -646,7 +646,7 @@ function main()
 		echo "$(get_time)[!]FATAL: dir \"GIT_BACKUP_DIR\" not found...";
 		echo;
 		echo;
-		exit 1;
+		return 1;
 	fi
 
 
@@ -658,9 +658,9 @@ function main()
 
 # do it
 	parse;
-	if [ "${?}" == "0" ];
+	if [ "${?}" != "0" ];
 	then
-		exit 1;
+		return 1;
 	fi
 
 
@@ -684,12 +684,14 @@ function main()
 # view run time
 	(( TAIL_DATE -= HEAD_DATE ));
 	echo "$(get_time)work time: ${TAIL_DATE} secs";
+
+	echo "$(get_time)Done.";
+	echo;
+	echo;
+	return 0;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-main;
+main "${@}";
 
-echo "$(get_time)Done.";
-echo;
-echo;
-exit 0;
+exit "${?}";
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
