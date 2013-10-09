@@ -3,7 +3,8 @@ Simple and pedantic backup Git repositories
 
 Easy config. Detailed log.
 Auto Clone/Update repository (full and incremental backup).
-Auto backup and prune all branches. Auto and manual choise compressor for archives.
+Auto backup and prune all branches.
+Auto and manual choise compressor for archives.
 Circular buffer for archives (default disabled).
 
 
