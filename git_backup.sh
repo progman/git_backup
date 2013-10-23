@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.4.1
+# 0.4.2
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -140,61 +140,36 @@ function get_size_max()
 	echo "${SIZE}";
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# kill old backups (default disable)
+# keep N new files snd kill other
 function kill_ring()
 {
-	if [ "${KILL_RING_MAX_ITEM_COUNT}" == "0" ] || [ "${KILL_RING_MAX_ITEM_COUNT}" == "" ];
+	local MAX_ITEM_COUNT="${1}";
+	(( MAX_ITEM_COUNT+=0 ))
+
+
+	if [ "${MAX_ITEM_COUNT}" == "0" ]; # 0 is disable
 	then
 		return;
 	fi
 
-	if [ ! -e "${KILL_RING_PATH}" ];
-	then
-		return;
-	fi
 
-	TMPFILE="$(mktemp)";
-	if [ "${?}" != "0" ];
-	then
-		echo "$(get_time)kill_ring(): can't make tmp file";
-		return;
-	fi
-
-	find "${KILL_RING_PATH}" -maxdepth 1 -type f -iname '*\.tar*' -printf '%T@ %p\n' | sort -n &> "${TMPFILE}";
-
-	KILL_RING_CUR_ITEM_COUNT=$(wc -l "${TMPFILE}" | { read a b; echo ${a}; });
-
-	if [ "${KILL_RING_CUR_ITEM_COUNT}" -gt "${KILL_RING_MAX_ITEM_COUNT}" ];
-	then
-		if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
-		then
-			echo "$(get_time)time to kill old...";
-		fi
-
-		KILL_RING_ITEM_COUNT="${KILL_RING_CUR_ITEM_COUNT}";
-
-		(( KILL_RING_ITEM_COUNT -= KILL_RING_MAX_ITEM_COUNT ));
-
-
-		if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
-		then
-			echo "$(get_time)kill_ring(): KILL_RING_MAX_ITEM_COUNT=\"${KILL_RING_MAX_ITEM_COUNT}\"";
-			echo "$(get_time)kill_ring(): KILL_RING_CUR_ITEM_COUNT=\"${KILL_RING_CUR_ITEM_COUNT}\"";
-			echo "$(get_time)kill_ring(): KILL_RING_ITEM_COUNT=\"${KILL_RING_ITEM_COUNT}\"";
-		fi
-
-
-		head -n "${KILL_RING_ITEM_COUNT}" "${TMPFILE}" | while read -r TIMESTAMP FILENAME;
+	local FILENAME;
+	find ./ -maxdepth 1 -type f -iname '*\.tar\.*' -printf '%T@ %p\n' | sort -nr | sed -e 's/^[0-9]*\.[0-9]*\ //g' |
+	{
+		while read -r FILENAME;
 		do
-			if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
+
+			if [ "${MAX_ITEM_COUNT}" == "0" ];
 			then
 				echo "rm -rf \"${FILENAME}\"";
+				rm -rf -- "${FILENAME}" &> /dev/null;
+				continue;
 			fi
-			rm -rf "${FILENAME}";
-		done;
-	fi
 
-	rm -rf "${TMPFILE}" &> /dev/null;
+			(( MAX_ITEM_COUNT-- ));
+
+		done
+	};
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # make archive
@@ -530,9 +505,12 @@ function get_git()
 	fi
 
 
-	KILL_RING_PATH="${GIT_BACKUP_DIR}/${NAME}.${HASH}";
-	KILL_RING_MAX_ITEM_COUNT="${GIT_BACKUP_MAX_ITEM_COUNT}";
-	kill_ring;
+	if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
+	then
+		kill_ring "${GIT_BACKUP_MAX_ITEM_COUNT}";
+	else
+		kill_ring "${GIT_BACKUP_MAX_ITEM_COUNT}" &> /dev/null;
+	fi
 
 
 	cd ..;
@@ -599,11 +577,11 @@ function main()
 
 
 # view program name
-	echo "$(get_time)run git_backup v0.4.1 (https://github.com/progman/git_backup)";
+	echo "$(get_time)run git_backup v0.4.2 (https://github.com/progman/git_backup)";
 
 
 # check depends tools
-	check_prog "awk date echo git grep head ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum";
+	check_prog "awk date echo git grep ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum";
 	if [ "${?}" != "0" ];
 	then
 		return 1;
