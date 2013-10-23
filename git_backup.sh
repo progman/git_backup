@@ -105,7 +105,7 @@ function get_size_min()
 		echo "${SIZE}";
 	fi
 
-	find ./ -maxdepth 2 -type f -iname '*\.tar*' -printf '%s\n' > "${TMPFILE}";
+	find ./ -type f -iname '*\.tar*' -printf '%s\n' > "${TMPFILE}";
 
 	while read -r ITEM_SIZE;
 	do
