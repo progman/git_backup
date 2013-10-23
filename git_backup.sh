@@ -154,7 +154,7 @@ function kill_ring()
 
 
 	local FILENAME;
-	find ./ -maxdepth 1 -type f -iname '*\.tar\.*' -printf '%T@ %p\n' | sort -nr | sed -e 's/^[0-9]*\.[0-9]*\ //g' |
+	find ./ -maxdepth 1 -type f -iname '*\.tar\.*' -printf '%T@ %p\n' | sort -nr | sed -e 's/^[0-9]*\.[0-9]*\ \.\///g' |
 	{
 		while read -r FILENAME;
 		do
