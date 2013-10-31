@@ -595,7 +595,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.4.4 (https://github.com/progman/git_backup)";
+	echo "$(get_time)  run git_backup v0.4.4 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
