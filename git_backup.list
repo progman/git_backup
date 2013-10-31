@@ -1,4 +1,9 @@
-# this is Git repositories list
+# this is Git repositories list, format: [SUBDIR] GIT_URL
 
+# without subdir
 git://github.com/progman/gitbash.git
 git://github.com/progman/git_backup.git
+
+# with subdir
+git_tool git://github.com/progman/gitbash.git
+git_tool git://github.com/progman/git_backup.git
