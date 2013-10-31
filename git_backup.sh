@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.4.3
+# 0.4.4
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -225,7 +225,6 @@ function pack()
 
 
 	FILE="${NAME_BARE}.$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
-	echo "$(get_time)+ pack repository \"${NAME}\"";
 	ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME_BARE}";
 	if [ "${?}" != "0" ];
 	then
@@ -323,6 +322,8 @@ function get_git()
 
 	stupid_compatibility; # kill me
 
+
+# create subdir if is need
 	if [ "${SUBDIR}" != "" ];
 	then
 
@@ -339,6 +340,7 @@ function get_git()
 
 		cd -- "${SUBDIR}" &> /dev/null;
 	fi
+
 
 	mkdir -- "${NAME}.${HASH}" &> /dev/null;
 	touch -- "${NAME}.${HASH}" &> /dev/null;
@@ -376,11 +378,9 @@ function get_git()
 	if [ -e "${NAME_BARE}" ];
 	then
 		cd "${NAME_BARE}";
-		echo "$(get_time)  update repository \"${SUBDIR}${NAME}\" from \"${URL}\"";
 
 		while true;
 		do
-
 
 # is git repo?
 			git branch &> /dev/null;
@@ -435,7 +435,7 @@ function get_git()
 	then
 		rm -rf "${NAME}.git"; &> /dev/null; # for old versions compatibility
 		rm -rf "${NAME_BARE}" &> /dev/null;
-		echo "$(get_time)  clone repository \"${SUBDIR}${NAME}\" from \"${URL}\"";
+		echo "$(get_time)+ clone  repository \"${SUBDIR}${NAME}\" from \"${URL}\"";
 		git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null;
 		if [ "${?}" != "0" ];
 		then
@@ -469,6 +469,18 @@ function get_git()
 	fi
 
 
+# show update status
+	if [ "${FLAG_CLONE}" == "0" ];
+	then
+		if [ "${FLAG_REPO_UPDATE}" == "1" ];
+		then
+			echo "$(get_time)+ update repository \"${SUBDIR}${NAME}\" from \"${URL}\"";
+		else
+			echo "$(get_time)  update repository \"${SUBDIR}${NAME}\" from \"${URL}\"";
+		fi
+	fi
+
+
 # fsck repo if enabled
 	if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
 	then
@@ -496,11 +508,6 @@ function get_git()
 	if [ "${FLAG_REPO_UPDATE}" == "1" ] || [ "${GIT_BACKUP_FLAG_FORCE_PACK}" == "1" ];
 	then
 		pack;
-	else
-		if [ "${GIT_BACKUP_FLAG_DEBUG}" == "1" ];
-		then
-			echo "$(get_time)  repository \"${SUBDIR}${NAME}\" NOT modify";
-		fi
 	fi
 
 
@@ -588,7 +595,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.4.3 (https://github.com/progman/git_backup)";
+	echo "$(get_time)  run git_backup v0.4.4 (https://github.com/progman/git_backup)";
 
 
 # check depends tools
