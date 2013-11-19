@@ -496,8 +496,8 @@ function get_git()
 # garbage collect cache repository
 	if [ "${GIT_BACKUP_FLAG_REPO_GC}" == "1" ] && [ "${GIT_BACKUP_FLAG_REPO_CACHE}" != "0" ];
 	then
+#		git gc --aggressive --prune=now &> /dev/null;
 		git gc --aggressive --no-prune &> /dev/null;
-		git repack -ad &> /dev/null;
 	fi
 
 
