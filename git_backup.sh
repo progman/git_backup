@@ -439,7 +439,7 @@ function get_git()
 		git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null;
 		if [ "${?}" != "0" ];
 		then
-			echo "$(get_time)! ERROR: clone error, skip repo...";
+			echo "$(get_time)! ERROR: clone error, skip repo \"${SUBDIR}${NAME}\"...";
 			return;
 		fi
 		FLAG_REPO_UPDATE='1';
@@ -456,7 +456,7 @@ function get_git()
 	git fetch --all -p &> /dev/null;
 	if [ "${?}" != "0" ];
 	then
-		echo "$(get_time)! ERROR: fetch error, skip repo...";
+		echo "$(get_time)! ERROR: fetch error, skip repo \"${SUBDIR}${NAME}\"...";
 		return;
 	fi
 
@@ -487,7 +487,7 @@ function get_git()
 		git fsck --full &> /dev/null;
 		if [ "${?}" != "0" ];
 		then
-			echo "$(get_time)! ERROR: fsck error, skip repo...";
+			echo "$(get_time)! ERROR: fsck error, skip repo \"${SUBDIR}${NAME}\"...";
 			return;
 		fi
 	fi
