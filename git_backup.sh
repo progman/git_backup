@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.4.4
+# 0.4.5
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -20,7 +20,7 @@ function check_prog()
 	do
 		if [ "$(which ${i})" == "" ];
 		then
-			echo "$(get_time)! FATAL: you must install \"${i}\"...";
+			echo "$(get_time)! FATAL: you must install \"${i}\", exit";
 			return 1;
 		fi
 	done
@@ -229,80 +229,9 @@ function pack()
 	if [ "${?}" != "0" ];
 	then
 		rm -rf "${FILE}.tmp" &> /dev/null;
-		echo "$(get_time)! ERROR: pack repository archive error...";
+		echo "$(get_time)! ERROR: pack repository error, skip it";
 	else
 		mv "${FILE}.tmp" "${FILE}";
-	fi
-}
-#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# for old versions compatibility, auto convert from old format
-function stupid_compatibility()
-{
-	if [ -e "${NAME}" ];
-	then
-		cd "${NAME}";
-
-		for i in $(find ./ -maxdepth 1 -type d | grep -v '^./$');
-		do
-			rm -rf "${i}" &> /dev/null;
-		done
-
-		FLAG_RENAME='0';
-
-		ARCH="$(ls -1 --color=none | grep '\.tar' | sort -n | tail -n 1)";
-		if [ "${ARCH}" != "" ];
-		then
-			tar xvf "${ARCH}" &> /dev/null;
-			if [ "${?}" == "0" ];
-			then
-
-				if [ -e "${NAME}" ];
-				then
-					cd "${NAME}";
-					XURL=$(git config -l | grep remote.origin.url | sed -e 's/remote.origin.url=//g');
-					XHASH=$(echo "${XURL}" | sha1sum | awk '{print $1}');
-					cd ..;
-					if [ "${XURL}" != "" ];
-					then
-						FLAG_RENAME='1';
-						rm -rf "${NAME}" &> /dev/null;
-					fi
-				fi
-
-				if [ -e "${NAME}.git" ];
-				then
-					cd "${NAME}.git";
-					XURL=$(git config -l | grep remote.origin.url | sed -e 's/remote.origin.url=//g');
-					XHASH=$(echo "${XURL}" | sha1sum | awk '{print $1}');
-					cd ..;
-					if [ "${XURL}" != "" ];
-					then
-						FLAG_RENAME='1';
-						rm -rf "${NAME}.git" &> /dev/null;
-					fi
-				fi
-
-				if [ -e "${NAME}.${HASH}.git" ];
-				then
-					cd "${NAME}.${HASH}.git";
-					XURL=$(git config -l | grep remote.origin.url | sed -e 's/remote.origin.url=//g');
-					XHASH=$(echo "${XURL}" | sha1sum | awk '{print $1}');
-					cd ..;
-					if [ "${XURL}" != "" ];
-					then
-						FLAG_RENAME='1';
-						rm -rf "${NAME}.${HASH}.git" &> /dev/null;
-					fi
-				fi
-			fi
-		fi
-
-		cd ..;
-
-		if [ "${FLAG_RENAME}" == "1" ];
-		then
-			mv "${NAME}" "${NAME}.${XHASH}" &> /dev/null;
-		fi
 	fi
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -319,8 +248,6 @@ function get_git()
 	NAME_BARE="${NAME}.${HASH}.git";
 
 	cd "${GIT_BACKUP_DIR}";
-
-	stupid_compatibility; # kill me
 
 
 # create subdir if is need
@@ -367,7 +294,7 @@ function get_git()
 			tar xvf "${ARCH}" &> /dev/null;
 			if [ "${?}" != "0" ];
 			then
-				echo "$(get_time)! error unpack, skip it...";
+				echo "$(get_time)! ERROR: unpack error, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
 				rm -rf "${NAME_BARE}" &> /dev/null;
 			fi
 		fi
@@ -386,24 +313,16 @@ function get_git()
 			git branch &> /dev/null;
 			if [ "${?}" != "0" ];
 			then
-				echo "$(get_time)! error update, is NOT repository, skip it...";
+				echo "$(get_time)! ERROR: is not Git repository, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
 				break;
 			fi
-
-
-# is not modify?
-#			if [ "$(git status --porcelain | wc -l)" != "0" ];
-#			then
-#				echo "$(get_time)! error update, this repository modify, skip it...";
-#				break;
-#			fi
 
 
 # repo URL and exist repo URL equal?
 			URL_CUR=$(git config -l | grep '^remote.origin.url' | sed -e 's/remote.origin.url=//g');
 			if [ "${URL}" != "${URL_CUR}" ];
 			then
-				echo "$(get_time)! error update, alien remote.origin.url, skip it...";
+				echo "$(get_time)! ERROR: alien remote.origin.url, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
 				break;
 			fi
 
@@ -414,7 +333,7 @@ function get_git()
 				git fsck --full &> /dev/null;
 				if [ "${?}" != "0" ];
 				then
-					echo "$(get_time)! error update, fsck error, skip it...";
+					echo "$(get_time)! ERROR: fsck error, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
 					break;
 				fi
 			fi
@@ -439,7 +358,7 @@ function get_git()
 		git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null;
 		if [ "${?}" != "0" ];
 		then
-			echo "$(get_time)! ERROR: clone error, skip repo \"${SUBDIR}${NAME}\"...";
+			echo "$(get_time)! ERROR: clone error, skip repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
 			return;
 		fi
 		FLAG_REPO_UPDATE='1';
@@ -456,7 +375,7 @@ function get_git()
 	git fetch --all -p &> /dev/null;
 	if [ "${?}" != "0" ];
 	then
-		echo "$(get_time)! ERROR: fetch error, skip repo \"${SUBDIR}${NAME}\"...";
+		echo "$(get_time)! ERROR: fetch error, skip repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
 		return;
 	fi
 
@@ -487,10 +406,13 @@ function get_git()
 		git fsck --full &> /dev/null;
 		if [ "${?}" != "0" ];
 		then
-			echo "$(get_time)! ERROR: fsck error, skip repo \"${SUBDIR}${NAME}\"...";
+			echo "$(get_time)! ERROR: fsck error, skip repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
 			return;
 		fi
 	fi
+
+
+
 
 
 # garbage collect cache repository
@@ -532,7 +454,7 @@ function parse()
 	local TMP="$(mktemp)";
 	if [ "${?}" != "0" ];
 	then
-		echo "$(get_time)! FATAL: can't make tmp file";
+		echo "$(get_time)! FATAL: can't make tmp file, exit";
 		echo;
 		echo;
 		return 1;
@@ -585,8 +507,10 @@ function main()
 	then
 		PID="$(cat ${GIT_BACKUP_PIDFILE})";
 
-		kill -0 "${PID}" &> /dev/null;
-		if [ "${?}" == "0" ];
+#		kill -0 "${PID}" &> /dev/null;
+#		if [ "${?}" == "0" ];
+
+		if [ "$(ps -e -o pid | grep ${PID} | wc -l | { read a b; echo ${a}; })" != "0" ];
 		then
 			return 0; # program already run
 		fi
@@ -595,11 +519,11 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.4.4 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.4.5 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
-	check_prog "awk date echo git grep ionice ls mkdir mktemp mv nice rm sed sort tail tar test touch wc xargs sha1sum";
+	check_prog "awk date echo git grep ionice ls mkdir mktemp mv nice ps rm sed sort tail tar test touch wc xargs sha1sum";
 	if [ "${?}" != "0" ];
 	then
 		return 1;
@@ -613,7 +537,7 @@ function main()
 # check variables
 	if [ "${GIT_BACKUP_REPO_LIST}" == "" ];
 	then
-		echo "$(get_time)! FATAL: variable \"GIT_BACKUP_REPO_LIST\" is not set...";
+		echo "$(get_time)! FATAL: variable \"GIT_BACKUP_REPO_LIST\" is not set, exit";
 		echo;
 		echo;
 		return 1;
@@ -621,7 +545,7 @@ function main()
 
 	if [ ! -e "${GIT_BACKUP_REPO_LIST}" ];
 	then
-		echo "$(get_time)! FATAL: file \"GIT_BACKUP_REPO_LIST\" not found...";
+		echo "$(get_time)! FATAL: file \"GIT_BACKUP_REPO_LIST\" not found, exit";
 		echo;
 		echo;
 		return 1;
@@ -629,7 +553,7 @@ function main()
 
 	if [ "${GIT_BACKUP_DIR}" == "" ];
 	then
-		echo "$(get_time)! FATAL: variable \"GIT_BACKUP_DIR\" is not set...";
+		echo "$(get_time)! FATAL: variable \"GIT_BACKUP_DIR\" is not set, exit";
 		echo;
 		echo;
 		return 1;
@@ -639,7 +563,7 @@ function main()
 
 	if [ ! -d "${GIT_BACKUP_DIR}" ];
 	then
-		echo "$(get_time)! FATAL: dir \"GIT_BACKUP_DIR\" not found...";
+		echo "$(get_time)! FATAL: dir \"GIT_BACKUP_DIR\" not found, exit";
 		echo;
 		echo;
 		return 1;
