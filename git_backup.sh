@@ -487,6 +487,24 @@ function parse()
 	return 0;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
+# check run
+function check_run()
+{
+	local PID="$(cat ${1})";
+
+#	kill -0 "${PID}" &> /dev/null;
+#	if [ "${?}" == "0" ];
+
+#	if [ "$(ps -e -o pid | grep ${PID} | { read a b; echo ${a}; })" == "${PID}" ];
+	if [ "$(ps -hp ${PID} | wc -l | { read a b; echo ${a}; })" != "0" ];
+	then
+		return 1; # program already run
+	fi
+
+
+	return 0;
+}
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
 # general function
 function main()
 {
@@ -505,12 +523,9 @@ function main()
 	fi
 	if [ -e "${GIT_BACKUP_PIDFILE}" ];
 	then
-		PID="$(cat ${GIT_BACKUP_PIDFILE})";
-
-#		kill -0 "${PID}" &> /dev/null;
-#		if [ "${?}" == "0" ];
-
-		if [ "$(ps -e -o pid | grep ${PID} | { read a b; echo ${a}; })" == "${PID}" ];
+# check run
+		check_run "${GIT_BACKUP_PIDFILE}";
+		if [ "${?}" != "0" ];
 		then
 			return 0; # program already run
 		fi
