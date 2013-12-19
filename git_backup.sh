@@ -490,7 +490,8 @@ function parse()
 # check run
 function check_run()
 {
-	local PID="$(cat ${1})";
+	local PID;
+	read PID < "${1}";
 
 #	kill -0 "${PID}" &> /dev/null;
 #	if [ "${?}" == "0" ];
