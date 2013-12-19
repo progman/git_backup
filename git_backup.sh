@@ -247,7 +247,7 @@ function get_git()
 
 	NAME_BARE="${NAME}.${HASH}.git";
 
-	cd "${GIT_BACKUP_DIR}";
+	cd -- "${GIT_BACKUP_DIR}";
 
 
 # create subdir if is need
@@ -295,7 +295,7 @@ function get_git()
 			if [ "${?}" != "0" ];
 			then
 				echo "$(get_time)! ERROR: unpack error, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
-				rm -rf "${NAME_BARE}" &> /dev/null;
+				rm -rf -- "${NAME_BARE}" &> /dev/null;
 			fi
 		fi
 	fi
@@ -310,7 +310,7 @@ function get_git()
 		do
 
 # is git repo?
-			git branch &> /dev/null;
+			git branch &> /dev/null < /dev/null;
 			if [ "${?}" != "0" ];
 			then
 				echo "$(get_time)! ERROR: is not Git repository, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -330,7 +330,7 @@ function get_git()
 # fsck repo if enabled
 			if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
 			then
-				git fsck --full &> /dev/null;
+				git fsck --full &> /dev/null < /dev/null;
 				if [ "${?}" != "0" ];
 				then
 					echo "$(get_time)! ERROR: fsck error, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -352,10 +352,10 @@ function get_git()
 # clone git repo
 	if [ "${FLAG_CLONE}" != "0" ];
 	then
-		rm -rf "${NAME}.git"; &> /dev/null; # for old versions compatibility
-		rm -rf "${NAME_BARE}" &> /dev/null;
+		rm -rf -- "${NAME}.git"; &> /dev/null; # for old versions compatibility
+		rm -rf -- "${NAME_BARE}" &> /dev/null;
 		echo "$(get_time)+ clone  repository \"${SUBDIR}${NAME}\" from \"${URL}\"";
-		git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null;
+		git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null < /dev/null;
 		if [ "${?}" != "0" ];
 		then
 			echo "$(get_time)! ERROR: clone error, skip repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -365,14 +365,14 @@ function get_git()
 	fi
 
 
-	touch "${NAME_BARE}" &> /dev/null;
-	cd "${NAME_BARE}";
+	touch -- "${NAME_BARE}" &> /dev/null;
+	cd -- "${NAME_BARE}";
 
 
 # fetch all
 #	OLD_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
 	OLD_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
-	git fetch --all -p &> /dev/null;
+	git fetch --all -p &> /dev/null < /dev/null;
 	if [ "${?}" != "0" ];
 	then
 		echo "$(get_time)! ERROR: fetch error, skip repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -403,7 +403,7 @@ function get_git()
 # fsck repo if enabled
 	if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
 	then
-		git fsck --full &> /dev/null;
+		git fsck --full &> /dev/null < /dev/null;
 		if [ "${?}" != "0" ];
 		then
 			echo "$(get_time)! ERROR: fsck error, skip repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -418,8 +418,8 @@ function get_git()
 # garbage collect cache repository
 	if [ "${GIT_BACKUP_FLAG_REPO_GC}" == "1" ] && [ "${GIT_BACKUP_FLAG_REPO_CACHE}" != "0" ];
 	then
-#		git gc --aggressive --prune=now &> /dev/null;
-		git gc --aggressive --no-prune &> /dev/null;
+#		git gc --aggressive --prune=now &> /dev/null < /dev/null;
+		git gc --aggressive --no-prune &> /dev/null < /dev/null;
 	fi
 
 
@@ -436,7 +436,7 @@ function get_git()
 # delete clone repository
 	if [ "${GIT_BACKUP_FLAG_REPO_CACHE}" == "0" ];
 	then
-		rm -rf "${NAME_BARE}" &> /dev/null;
+		rm -rf -- "${NAME_BARE}" &> /dev/null;
 	fi
 
 
