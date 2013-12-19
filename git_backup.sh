@@ -510,7 +510,7 @@ function main()
 #		kill -0 "${PID}" &> /dev/null;
 #		if [ "${?}" == "0" ];
 
-		if [ "$(ps -e -o pid | grep ${PID} | wc -l | { read a b; echo ${a}; })" != "0" ];
+		if [ "$(ps -e -o pid | grep ${PID} | { read a b; echo ${a}; })" == "${PID}" ];
 		then
 			return 0; # program already run
 		fi
