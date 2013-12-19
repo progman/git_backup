@@ -510,21 +510,20 @@ function check_run()
 function main()
 {
 # check minimal depends tools
-	check_prog "cat kill echo";
+	check_prog "echo ps wc";
 	if [ "${?}" != "0" ];
 	then
 		return 1;
 	fi
 
 
-# check race condition
+# check run
 	if [ "${GIT_BACKUP_PIDFILE}" == "" ];
 	then
 		GIT_BACKUP_PIDFILE="/var/run/git_backup.pid";
 	fi
 	if [ -e "${GIT_BACKUP_PIDFILE}" ];
 	then
-# check run
 		check_run "${GIT_BACKUP_PIDFILE}";
 		if [ "${?}" != "0" ];
 		then
