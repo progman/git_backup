@@ -13,6 +13,7 @@ cp ./git_backup.list /tmp/git_backup/ &> /dev/null; # for example only, delete t
 #export GIT_BACKUP_FLAG_VIEW_SIZE=1;     # view total backup size. default 1 - enable
 #export GIT_BACKUP_FLAG_REPO_FSCK=1;     # fsck exist or unpack repo. default 1 - enable
 #export GIT_BACKUP_FLAG_REPO_GC=0;       # garbage collect cache repo. default 0 - disable
+#export GIT_BACKUP_FLAG_REPO_GC_PRUNE=0; # prune if garbage collect on. default 0 - disable
 #export GIT_BACKUP_FLAG_FORCE_PACK=0;    # pack repo anyway. default 0 - disable
 #export GIT_BACKUP_FLAG_ALARM=0;         # do beep for begin. default 0 - disable
 

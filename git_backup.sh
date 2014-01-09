@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.4.5
+# 0.4.6
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -418,8 +418,12 @@ function get_git()
 # garbage collect cache repository
 	if [ "${GIT_BACKUP_FLAG_REPO_GC}" == "1" ] && [ "${GIT_BACKUP_FLAG_REPO_CACHE}" != "0" ];
 	then
-#		git gc --aggressive --prune=now &> /dev/null < /dev/null;
-		git gc --aggressive --no-prune &> /dev/null < /dev/null;
+		if [ "${GIT_BACKUP_FLAG_REPO_GC_PRUNE}" == "1" ];
+		then
+			git gc --aggressive --prune=now &> /dev/null < /dev/null;
+		else
+			git gc --aggressive --no-prune &> /dev/null < /dev/null;
+		fi
 	fi
 
 
@@ -534,7 +538,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.4.5 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.4.6 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
