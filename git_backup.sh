@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.4.6
+# 0.4.7
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -371,7 +371,8 @@ function get_git()
 
 # fetch all
 #	OLD_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
-	OLD_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
+#	OLD_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
+	OLD_LAST_COMMIT_HASH="$(sha1sum FETCH_HEAD 2>&1)";
 	git fetch --all -p &> /dev/null < /dev/null;
 	if [ "${?}" != "0" ];
 	then
@@ -381,7 +382,8 @@ function get_git()
 
 
 #	NEW_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
-	NEW_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
+#	NEW_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
+	NEW_LAST_COMMIT_HASH="$(sha1sum FETCH_HEAD 2>&1)";
 	if [ "${OLD_LAST_COMMIT_HASH}" != "${NEW_LAST_COMMIT_HASH}" ];
 	then
 		FLAG_REPO_UPDATE='1';
@@ -538,7 +540,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.4.6 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.4.7 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
