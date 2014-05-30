@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.4.7
+# 0.4.8
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -369,10 +369,22 @@ function get_git()
 	cd -- "${NAME_BARE}";
 
 
-# fetch all
+# get old commit
+	local OLD_LAST_COMMIT_HASH;
 #	OLD_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
 #	OLD_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
 	OLD_LAST_COMMIT_HASH="$(sha1sum FETCH_HEAD 2>&1)";
+	if [ "${?}" != "0" ];
+	then
+		if [ "${FLAG_CLONE}" == "0" ];
+		then
+			echo "$(get_time)! WARNING: hash error, update anyway repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
+		fi
+		FLAG_REPO_UPDATE='1';
+	fi
+
+
+# fetch all
 	git fetch --all -p &> /dev/null < /dev/null;
 	if [ "${?}" != "0" ];
 	then
@@ -381,9 +393,19 @@ function get_git()
 	fi
 
 
+# get new commit
+	local NEW_LAST_COMMIT_HASH;
 #	NEW_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
 #	NEW_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
 	NEW_LAST_COMMIT_HASH="$(sha1sum FETCH_HEAD 2>&1)";
+	if [ "${?}" != "0" ];
+	then
+		echo "$(get_time)! WARNING: hash error, update anyway repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
+		FLAG_REPO_UPDATE='1';
+	fi
+
+
+# cmp old and new commit
 	if [ "${OLD_LAST_COMMIT_HASH}" != "${NEW_LAST_COMMIT_HASH}" ];
 	then
 		FLAG_REPO_UPDATE='1';
@@ -423,8 +445,16 @@ function get_git()
 		if [ "${GIT_BACKUP_FLAG_REPO_GC_PRUNE}" == "1" ];
 		then
 			git gc --aggressive --prune=now &> /dev/null < /dev/null;
+			if [ "${?}" != "0" ];
+			then
+				echo "$(get_time)! ERROR: gc error, into repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
+			fi
 		else
 			git gc --aggressive --no-prune &> /dev/null < /dev/null;
+			if [ "${?}" != "0" ];
+			then
+				echo "$(get_time)! ERROR: gc error, into repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
+			fi
 		fi
 	fi
 
@@ -540,7 +570,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.4.7 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.4.8 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
