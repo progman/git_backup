@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.4.8
+# 0.4.9
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -570,7 +570,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.4.8 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.4.9 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
@@ -637,6 +637,7 @@ function main()
 # view stats
 	if [ "${GIT_BACKUP_FLAG_VIEW_SIZE}" != "0" ];
 	then
+		cd -- "${GIT_BACKUP_DIR}";
 		local SIZE_MIN=$(get_size_min);
 		local HUMAN_SIZE_MIN="$(human_size ${SIZE_MIN})";
 
