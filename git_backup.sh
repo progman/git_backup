@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.5.2
+# 0.5.3
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -292,7 +292,7 @@ function get_git()
 # if repo not exist try unpack last archive and update
 	if [ ! -e "${NAME_BARE}" ];
 	then
-		ARCH="$(ls -1 --color=none | grep '\.tar' | sort -n | tail -n 1)";
+		ARCH="$(ls -1 | grep -- '\.tar' | sort -n | tail -n 1)";
 
 		if [ "${ARCH}" != "" ];
 		then
@@ -578,7 +578,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.5.2 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.5.3 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
