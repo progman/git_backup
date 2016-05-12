@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.5.1
+# 0.5.2
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -578,11 +578,11 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.4.9 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.5.2 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
-	check_prog "awk date echo git grep ionice ls mkdir mktemp mv nice ps rm sed sort tail tar test touch wc xargs sha1sum";
+	check_prog "awk date echo git grep ls mkdir mktemp mv nice ps rm sed sort tail tar test touch wc xargs sha1sum";
 	if [ "${?}" != "0" ];
 	then
 		return 1;
