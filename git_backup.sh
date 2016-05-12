@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.4.9
+# 0.5.0
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -225,7 +225,14 @@ function pack()
 
 
 	FILE="${NAME_BARE}.$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
-	ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME_BARE}";
+
+	if [ "$(which ionice)" != "" ];
+	then
+		ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME_BARE}";
+	else
+		nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME_BARE}";
+	fi
+
 	if [ "${?}" != "0" ];
 	then
 		rm -rf "${FILE}.tmp" &> /dev/null;
