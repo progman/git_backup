@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.5.3
+# 0.5.4
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -248,7 +248,7 @@ function get_git()
 	local URL="${1}";
 	local SUBDIR="${2}";
 
-	NAME="$(echo ${URL} | sed -e 's/\.git//g' | sed -e 's/.*:\|.*\///g')";
+	NAME="$(echo ${URL} | sed -e 's/\.git//g' | sed -e 's/.*://g' | sed -e 's/.*\///g')";
 
 	HASH=$(echo "${URL}" | sha1sum | awk '{print $1}');
 
@@ -578,7 +578,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.5.3 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.5.4 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
