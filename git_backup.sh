@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.5.5
+# 0.5.6
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -583,16 +583,15 @@ function check_run()
 	local PID;
 	read PID < "${1}";
 
-#	kill -0 "${PID}" &> /dev/null;
-#	if [ "${?}" == "0" ];
+	if [ -z "${PID##*[!0-9]*}" ];
+	then
+		return 0; # bad pid
+	fi
 
-#	if [ "$(ps -e -o pid | grep ${PID} | { read a b; echo ${a}; })" == "${PID}" ];
-#	if [ "$(ps -hp ${PID} | wc -l | { read a b; echo ${a}; })" != "0" ];
 	if [ "$(ps -p ${PID} | wc -l | { read a; echo ${a}; })" != "1" ];
 	then
 		return 1; # program already run
 	fi
-
 
 	return 0;
 }
@@ -622,10 +621,15 @@ function main()
 		fi
 	fi
 	echo "${BASHPID}" > "${GIT_BACKUP_PIDFILE}";
+	check_run "${GIT_BACKUP_PIDFILE}";
+	if [ "${?}" == "0" ];
+	then
+		return 0; # program not run
+	fi
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.5.5 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.5.6 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
