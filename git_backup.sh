@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.5.4
+# 0.5.5
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -98,17 +98,40 @@ function human_size()
 function get_size_min()
 {
 	local SIZE=0;
+	local TMPFILE;
+	local FLAG_GNU;
+	local ITEM_SIZE;
+	local ITEM_NAME;
 
-	local TMPFILE=$(mktemp);
+
+	TMPFILE=$(mktemp);
 	if [ "${?}" != "0" ];
 	then
 		echo "${SIZE}";
+		return;
 	fi
 
-	find ./ -type f -iname '*\.tar*' -printf '%s\n' > "${TMPFILE}";
+	FLAG_GNU=$(find --version 2>&1 | grep GNU | wc -l | { read a; echo ${a}; });
 
-	while read -r ITEM_SIZE;
+	if [ "${FLAG_GNU}" != "0" ];
+	then
+		find ./ -type f -iname '*\.tar*' -printf '%s\n' > "${TMPFILE}";
+		while read -r ITEM_SIZE;
+		do
+			(( SIZE += ITEM_SIZE ));
+		done < "${TMPFILE}";
+
+		rm -rf "${TMPFILE}" &> /dev/null;
+
+		echo "${SIZE}";
+		return;
+	fi
+
+
+	find ./ -type f -iname '*\.tar*' > "${TMPFILE}";
+	while read -r ITEM_NAME;
 	do
+		ITEM_SIZE=$(stat -f '%z' "${ITEM_NAME}");
 		(( SIZE += ITEM_SIZE ));
 	done < "${TMPFILE}";
 
@@ -121,17 +144,40 @@ function get_size_min()
 function get_size_max()
 {
 	local SIZE=0;
+	local TMPFILE;
+	local FLAG_GNU;
+	local ITEM_SIZE;
+	local ITEM_NAME;
 
-	local TMPFILE=$(mktemp);
+
+	TMPFILE=$(mktemp);
 	if [ "${?}" != "0" ];
 	then
 		echo "${SIZE}";
+		return;
 	fi
 
-	find ./ -type f -printf '%s\n' > "${TMPFILE}";
+	FLAG_GNU=$(find --version 2>&1 | grep GNU | wc -l | { read a; echo ${a}; });
 
-	while read -r ITEM_SIZE;
+	if [ "${FLAG_GNU}" != "0" ];
+	then
+		find ./ -type f -printf '%s\n' > "${TMPFILE}";
+		while read -r ITEM_SIZE;
+		do
+			(( SIZE += ITEM_SIZE ));
+		done < "${TMPFILE}";
+
+		rm -rf "${TMPFILE}" &> /dev/null;
+
+		echo "${SIZE}";
+		return;
+	fi
+
+
+	find ./ -type f > "${TMPFILE}";
+	while read -r ITEM_NAME;
 	do
+		ITEM_SIZE=$(stat -f '%z' "${ITEM_NAME}");
 		(( SIZE += ITEM_SIZE ));
 	done < "${TMPFILE}";
 
@@ -494,7 +540,8 @@ function get_git()
 # parse repo list
 function parse()
 {
-	local TMP="$(mktemp)";
+	local TMP;
+	TMP="$(mktemp)";
 	if [ "${?}" != "0" ];
 	then
 		echo "$(get_time)! FATAL: can't make tmp file, exit";
@@ -578,11 +625,11 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.5.4 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.5.5 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
-	check_prog "awk date echo git grep ls mkdir mktemp mv nice ps rm sed sort tail tar test touch wc xargs sha1sum";
+	check_prog "awk date echo git grep ls mkdir mktemp mv nice ps rm sed sort stat tail tar test touch wc xargs sha1sum";
 	if [ "${?}" != "0" ];
 	then
 		return 1;
