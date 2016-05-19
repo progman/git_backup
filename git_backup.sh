@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.5.6
+# 0.5.7
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -31,7 +31,7 @@ function check_prog()
 # do beep
 function alarm()
 {
-	if [ "$(which beep)" != "" ] && [ "${GIT_BACKUP_FLAG_ALARM}" == "1" ];
+	if [ "$(which beep)" != "" ] && [ "${1}" == "1" ];
 	then
 		beep -r 1 -f 3000;
 	fi
@@ -199,21 +199,49 @@ function kill_ring()
 	fi
 
 
-	local FILENAME;
-	find ./ -maxdepth 1 -type f -iname '*\.tar\.*' -printf '%T@ %p\n' | sort -nr | sed -e 's/^[0-9]*\.[0-9]*\ \.\///g' |
-	{
-		while read -r FILENAME;
-		do
+	FLAG_GNU=$(find --version 2>&1 | grep GNU | wc -l | { read a; echo ${a}; });
 
+	if [ "${FLAG_GNU}" != "0" ];
+	then
+		local FILENAME;
+		find ./ -maxdepth 1 -type f -iname '*\.tar\.*' -printf '%T@ %p\n' | sort -nr | sed -e 's/^[0-9]*\.[0-9]*\ \.\///g' |
+		{
+			while read -r FILENAME;
+			do
+				if [ "${MAX_ITEM_COUNT}" == "0" ];
+				then
+					echo "rm -rf \"${FILENAME}\"";
+					rm -rf -- "${FILENAME}" &> /dev/null;
+					continue;
+				fi
+
+				(( MAX_ITEM_COUNT-- ));
+			done
+		};
+		return;
+	fi
+
+
+	local FILENAME1;
+	local FILENAME2;
+	find ./ -maxdepth 1 -type f -iname '*\.tar\.*' |
+	{
+		while read -r FILENAME1;
+		do
+			stat -f '%m %N' "${FILENAME1}";
+		done
+	} | sort -nr | sed -e 's/^[0-9]*\ \.\///g' |
+	{
+		while read -r FILENAME2;
+		do
 			if [ "${MAX_ITEM_COUNT}" == "0" ];
 			then
-				echo "rm -rf \"${FILENAME}\"";
-				rm -rf -- "${FILENAME}" &> /dev/null;
+				echo "rm -rf \"${FILENAME2}\"";
+				rm -rf -- "${FILENAME2}" &> /dev/null;
 				continue;
 			fi
 
 			(( MAX_ITEM_COUNT-- ));
-
 		done
 	};
 }
@@ -540,6 +568,10 @@ function get_git()
 # parse repo list
 function parse()
 {
+# get start time
+	local HEAD_DATE="$(date +'%s')";
+
+
 	local TMP;
 	TMP="$(mktemp)";
 	if [ "${?}" != "0" ];
@@ -553,6 +585,7 @@ function parse()
 	sed -e 's/#.*//' "${GIT_BACKUP_REPO_LIST}" | sed -e 's/\ *$//g' | sed -e '/^$/d' > "${TMP}";
 
 
+	local REPO_COUNT=0;
 	local SUBDIR;
 	local URL;
 	while read -r SUBDIR URL;
@@ -565,15 +598,46 @@ function parse()
 		if [ "${SUBDIR}" != "" ] && [ "${URL}" == "" ];
 		then
 			get_git "${SUBDIR}" "${URL}";
+			(( REPO_COUNT++ ));
 			continue;
 		fi
 
 		get_git "${URL}" "${SUBDIR}";
+		(( REPO_COUNT++ ));
 
 	done < "${TMP}";
 
 
 	rm -- "${TMP}" &> /dev/null;
+
+
+# view stats
+	if [ "${GIT_BACKUP_FLAG_VIEW_SIZE}" != "0" ];
+	then
+		cd -- "${GIT_BACKUP_DIR}";
+		local SIZE_MIN=$(get_size_min);
+		local HUMAN_SIZE_MIN="$(human_size ${SIZE_MIN})";
+
+		local SIZE_MAX=$(get_size_max);
+		local HUMAN_SIZE_MAX="$(human_size ${SIZE_MAX})";
+
+		echo "$(get_time)  total backup size min/max: ${HUMAN_SIZE_MIN}/${HUMAN_SIZE_MAX}";
+	fi
+
+
+# get stop time
+	local TAIL_DATE="$(date +'%s')";
+
+
+# view run time
+	(( TAIL_DATE -= HEAD_DATE ));
+	echo "$(get_time)  processed ${REPO_COUNT} repos, work time: ${TAIL_DATE} secs";
+
+	echo "$(get_time)  Done.";
+	echo;
+	echo;
+
+
 	return 0;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -629,7 +693,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.5.6 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.5.7 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
@@ -638,10 +702,6 @@ function main()
 	then
 		return 1;
 	fi
-
-
-# get start time
-	HEAD_DATE="$(date +'%s')";
 
 
 # check variables
@@ -680,7 +740,7 @@ function main()
 	fi
 
 
-	alarm;
+	alarm ${GIT_BACKUP_FLAG_ALARM};
 	echo "$(get_time)  use backup dir \"${GIT_BACKUP_DIR}\"";
 	touch "${GIT_BACKUP_DIR}" &> /dev/null;
 
@@ -693,31 +753,6 @@ function main()
 	fi
 
 
-# view stats
-	if [ "${GIT_BACKUP_FLAG_VIEW_SIZE}" != "0" ];
-	then
-		cd -- "${GIT_BACKUP_DIR}";
-		local SIZE_MIN=$(get_size_min);
-		local HUMAN_SIZE_MIN="$(human_size ${SIZE_MIN})";
-
-		local SIZE_MAX=$(get_size_max);
-		local HUMAN_SIZE_MAX="$(human_size ${SIZE_MAX})";
-
-		echo "$(get_time)  total backup size min/max: ${HUMAN_SIZE_MIN}/${HUMAN_SIZE_MAX}";
-	fi
-
-
-# get stop time
-	TAIL_DATE="$(date +'%s')";
-
-
-# view run time
-	(( TAIL_DATE -= HEAD_DATE ));
-	echo "$(get_time)  work time: ${TAIL_DATE} secs";
-
-	echo "$(get_time)  Done.";
-	echo;
-	echo;
 	return 0;
 }
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
