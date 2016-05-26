@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.5.7
+# 0.5.8
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -324,7 +324,7 @@ function get_git()
 
 	NAME="$(echo ${URL} | sed -e 's/\.git//g' | sed -e 's/.*://g' | sed -e 's/.*\///g')";
 
-	HASH=$(echo "${URL}" | sha1sum | awk '{print $1}');
+	HASH=$(echo "${URL}" | shasum -a 1 | awk '{print $1}');
 
 	NAME_BARE="${NAME}.${HASH}.git";
 
@@ -454,7 +454,7 @@ function get_git()
 	local OLD_LAST_COMMIT_HASH;
 #	OLD_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
 #	OLD_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
-	OLD_LAST_COMMIT_HASH="$(sha1sum FETCH_HEAD 2>&1)";
+	OLD_LAST_COMMIT_HASH="$(shasum -a 1 FETCH_HEAD 2>&1)";
 	if [ "${?}" != "0" ];
 	then
 		if [ "${FLAG_CLONE}" == "0" ];
@@ -478,7 +478,7 @@ function get_git()
 	local NEW_LAST_COMMIT_HASH;
 #	NEW_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
 #	NEW_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
-	NEW_LAST_COMMIT_HASH="$(sha1sum FETCH_HEAD 2>&1)";
+	NEW_LAST_COMMIT_HASH="$(shasum -a 1 FETCH_HEAD 2>&1)";
 	if [ "${?}" != "0" ];
 	then
 		echo "$(get_time)! WARNING: hash error, update anyway repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -693,7 +693,7 @@ function main()
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.5.7 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.5.8 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
