@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.5.9
+# 0.6.0
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -102,6 +102,7 @@ function get_size_min()
 	local FLAG_GNU;
 	local ITEM_SIZE;
 	local ITEM_NAME;
+	local COL1;
 
 
 	TMPFILE=$(mktemp);
@@ -111,7 +112,7 @@ function get_size_min()
 		return;
 	fi
 
-	FLAG_GNU=$(find --version 2>&1 | grep GNU | wc -l | { read a; echo ${a}; });
+	FLAG_GNU=$(find --version 2>&1 | grep GNU | wc -l | { read COL1; echo ${COL1}; });
 
 	if [ "${FLAG_GNU}" != "0" ];
 	then
@@ -148,6 +149,7 @@ function get_size_max()
 	local FLAG_GNU;
 	local ITEM_SIZE;
 	local ITEM_NAME;
+	local COL1;
 
 
 	TMPFILE=$(mktemp);
@@ -157,7 +159,7 @@ function get_size_max()
 		return;
 	fi
 
-	FLAG_GNU=$(find --version 2>&1 | grep GNU | wc -l | { read a; echo ${a}; });
+	FLAG_GNU=$(find --version 2>&1 | grep GNU | wc -l | { read COL1; echo ${COL1}; });
 
 	if [ "${FLAG_GNU}" != "0" ];
 	then
@@ -191,6 +193,8 @@ function kill_ring()
 {
 	local MAX_ITEM_COUNT="${1}";
 	(( MAX_ITEM_COUNT+=0 ))
+	local FLAG_GNU;
+	local COL1;
 
 
 	if [ "${MAX_ITEM_COUNT}" == "0" ]; # 0 is disable
@@ -199,7 +203,7 @@ function kill_ring()
 	fi
 
 
-	FLAG_GNU=$(find --version 2>&1 | grep GNU | wc -l | { read a; echo ${a}; });
+	FLAG_GNU=$(find --version 2>&1 | grep GNU | wc -l | { read COL1; echo ${COL1}; });
 
 	if [ "${FLAG_GNU}" != "0" ];
 	then
@@ -249,8 +253,8 @@ function kill_ring()
 # make archive
 function pack()
 {
-	ARCH_EXT='tar';
-	ARCH_OPT='cf';
+	local ARCH_EXT='tar';
+	local ARCH_OPT='cf';
 
 
 	if [ "$(which gzip)" != "" ];
@@ -298,7 +302,7 @@ function pack()
 	fi
 
 
-	FILE="${NAME_BARE}.$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
+	local FILE="${NAME_BARE}.$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
 
 	if [ "$(which ionice)" != "" ];
 	then
@@ -321,12 +325,15 @@ function get_git()
 {
 	local URL="${1}";
 	local SUBDIR="${2}";
+	local NAME="$(echo ${URL} | sed -e 's/\.git//g' | sed -e 's/.*://g' | sed -e 's/.*\///g')";
+	local HASH=$(echo "${URL}" | shasum -a 1 | awk '{print $1}');
+	local NAME_BARE="${NAME}.${HASH}.git";
+	local BASEDIR;
+	local FLAG_REPO_UPDATE='0'; # create archive or not
+	local FLAG_CLONE='1'; # clone or update git repo
+	local ARCH;
+	local URL_CUR;
 
-	NAME="$(echo ${URL} | sed -e 's/\.git//g' | sed -e 's/.*://g' | sed -e 's/.*\///g')";
-
-	HASH=$(echo "${URL}" | shasum -a 1 | awk '{print $1}');
-
-	NAME_BARE="${NAME}.${HASH}.git";
 
 	cd -- "${GIT_BACKUP_DIR}";
 
@@ -334,7 +341,6 @@ function get_git()
 # create subdir if is need
 	if [ "${SUBDIR}" != "" ];
 	then
-
 		if [ "${SUBDIR:${#SUBDIR}-1:1}" != "/" ];
 		then
 			SUBDIR="${SUBDIR}/";
@@ -353,14 +359,6 @@ function get_git()
 	mkdir -- "${NAME}.${HASH}" &> /dev/null;
 	touch -- "${NAME}.${HASH}" &> /dev/null;
 	cd -- "${NAME}.${HASH}" &> /dev/null;
-
-
-# create archive or not
-	FLAG_REPO_UPDATE='0';
-
-
-# clone or update git repo
-	FLAG_CLONE='1';
 
 
 # if repo not exist try unpack last archive and update
@@ -453,8 +451,8 @@ function get_git()
 # get old commit
 	local OLD_LAST_COMMIT_HASH;
 #	OLD_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
-#	OLD_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
-	OLD_LAST_COMMIT_HASH="$(shasum -a 1 FETCH_HEAD 2>&1)";
+	OLD_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
+#	OLD_LAST_COMMIT_HASH="$(shasum -a 1 FETCH_HEAD 2>&1)";
 	if [ "${?}" != "0" ];
 	then
 		if [ "${FLAG_CLONE}" == "0" ];
@@ -477,8 +475,8 @@ function get_git()
 # get new commit
 	local NEW_LAST_COMMIT_HASH;
 #	NEW_LAST_COMMIT_HASH="$(git log -n 1 --format=%H 2>&1)";
-#	NEW_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
-	NEW_LAST_COMMIT_HASH="$(shasum -a 1 FETCH_HEAD 2>&1)";
+	NEW_LAST_COMMIT_HASH="$(git rev-parse FETCH_HEAD 2>&1)";
+#	NEW_LAST_COMMIT_HASH="$(shasum -a 1 FETCH_HEAD 2>&1)";
 	if [ "${?}" != "0" ];
 	then
 		echo "$(get_time)! WARNING: hash error, update anyway repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -515,9 +513,6 @@ function get_git()
 			return;
 		fi
 	fi
-
-
-
 
 
 # garbage collect cache repository
@@ -644,17 +639,71 @@ function parse()
 # check run
 function check_run()
 {
-	local PID;
-	read PID < "${1}";
+	local PID_FILE="${1}" PID PID_SAVE PID_HASH PID_HASH_SAVE COL1 COL2;
 
-	if [ -z "${PID##*[!0-9]*}" ];
+	if [ "${PID_FILE}" == "" ];
 	then
-		return 0; # bad pid
+		return 0;
 	fi
 
-	if [ "$(ps -p ${PID} | wc -l | { read a; echo ${a}; })" != "1" ];
+# check PID_SAVE and PID_HASH_SAVE
+	if [ -e "${PID_FILE}" ];
 	then
-		return 1; # program already run
+		read PID_SAVE < "${PID_FILE}";
+
+		PID_HASH_SAVE='';
+		if [ -e "${PID_FILE}.hash" ];
+		then
+			read PID_HASH_SAVE < "${PID_FILE}.hash";
+		fi
+		PID_HASH=$(shasum -a 1 <<< "${PID_SAVE}" | { read COL1 COL2; echo ${COL1}; });
+		if [ "${PID_HASH}" != "${PID_HASH_SAVE}" ]
+		then
+			return 2; # program already run maybe (bad pid)
+		fi
+
+		if [ "$(ps -p ${PID_SAVE} | wc -l | { read COL1; echo ${COL1}; })" != "1" ];
+		then
+			return 1; # program already run (real)
+		fi
+	fi
+
+# save PID
+	PID="${BASHPID}";
+	echo "${PID}" > "${PID_FILE}";
+	if [ "${?}" != "0" ];
+	then
+		rm -rf -- "${PID_FILE}" &> /dev/null < /dev/null;
+		return 3; # program already run (did not save)
+	fi
+
+# save PID_HASH
+	PID_HASH=$(shasum -a 1 <<< "${PID}" | { read COL1 COL2; echo ${COL1}; });
+	echo "${PID_HASH}" > "${PID_FILE}.hash";
+	if [ "${?}" != "0" ];
+	then
+		rm -rf -- "${PID_FILE}" &> /dev/null < /dev/null;
+		return 3; # program already run (did not save)
+	fi
+
+# read PID
+	read PID_SAVE < "${PID_FILE}";
+	if [ "${PID_SAVE}" != "${PID}" ]
+	then
+		rm -rf -- "${PID_FILE}" &> /dev/null < /dev/null;
+		return 3; # program already run (did not save)
+	fi
+
+# read PID_HASH
+	PID_HASH_SAVE='';
+	if [ -e "${PID_FILE}.hash" ];
+	then
+		read PID_HASH_SAVE < "${PID_FILE}.hash";
+	fi
+	if [ "${PID_HASH_SAVE}" != "${PID_HASH}" ]
+	then
+		rm -rf -- "${PID_FILE}" &> /dev/null < /dev/null;
+		return 3; # program already run (did not save)
 	fi
 
 	return 0;
@@ -663,6 +712,9 @@ function check_run()
 # general function
 function main()
 {
+	local STATUS;
+
+
 # check minimal depends tools
 	check_prog "echo ps wc";
 	if [ "${?}" != "0" ];
@@ -671,29 +723,28 @@ function main()
 	fi
 
 
-# check run
 	if [ "${GIT_BACKUP_PIDFILE}" == "" ];
 	then
 		GIT_BACKUP_PIDFILE="/var/run/git_backup.pid";
 	fi
-	if [ -e "${GIT_BACKUP_PIDFILE}" ];
-	then
-		check_run "${GIT_BACKUP_PIDFILE}";
-		if [ "${?}" != "0" ];
-		then
-			return 0; # program already run
-		fi
-	fi
-	echo "${BASHPID}" > "${GIT_BACKUP_PIDFILE}";
+
+
+# check run
 	check_run "${GIT_BACKUP_PIDFILE}";
-	if [ "${?}" == "0" ];
+	STATUS="${?}";
+	if [ "${STATUS}" == "1" ];
 	then
-		return 0; # program not run
+		return 0; # program already run
+	fi
+	if [ "${STATUS}" == "2" ] || [ "${STATUS}" == "3" ];
+	then
+		echo "ERROR: corrupt PID file ${PID_FILE}";
+		return "${STATUS}"; # bad pid file
 	fi
 
 
 # view program name
-	echo "$(get_time)  run git_backup v0.5.9 (https://github.com/progman/git_backup.git)";
+	echo "$(get_time)  run git_backup v0.6.0 (https://github.com/progman/git_backup.git)";
 
 
 # check depends tools
