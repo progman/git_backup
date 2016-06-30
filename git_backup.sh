@@ -1,6 +1,6 @@
 #!/bin/bash
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.6.0
+# 0.6.1
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -304,12 +304,12 @@ function pack()
 
 	local FILE="${NAME_BARE}.$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
 
+	local NICE='nice -n 20';
 	if [ "$(which ionice)" != "" ];
 	then
-		ionice -c 3 nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME_BARE}";
-	else
-		nice -n 20 tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME_BARE}";
+		NICE='ionice -c 3 nice -n 20';
 	fi
+	"${NICE}" tar "${ARCH_OPT}" "${FILE}.tmp" "${NAME_BARE}";
 
 	if [ "${?}" != "0" ];
 	then
@@ -333,6 +333,12 @@ function get_git()
 	local FLAG_CLONE='1'; # clone or update git repo
 	local ARCH;
 	local URL_CUR;
+
+	local NICE='nice -n 20';
+	if [ "$(which ionice)" != "" ];
+	then
+		NICE='ionice -c 3 nice -n 20';
+	fi
 
 
 	cd -- "${GIT_BACKUP_DIR}";
@@ -370,7 +376,7 @@ function get_git()
 		then
 			echo "$(get_time)  unpack repository \"${SUBDIR}${NAME}\" from last backup \"${ARCH}\"";
 
-			tar xvf "${ARCH}" &> /dev/null;
+			"${NICE}" tar xvf "${ARCH}" &> /dev/null;
 			if [ "${?}" != "0" ];
 			then
 				echo "$(get_time)! ERROR: unpack error, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -389,7 +395,7 @@ function get_git()
 		do
 
 # is git repo?
-			git branch &> /dev/null < /dev/null;
+			"${NICE}" git branch &> /dev/null < /dev/null;
 			if [ "${?}" != "0" ];
 			then
 				echo "$(get_time)! ERROR: is not Git repository, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -409,7 +415,7 @@ function get_git()
 # fsck repo if enabled
 			if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
 			then
-				git fsck --full &> /dev/null < /dev/null;
+				"${NICE}" git fsck --full &> /dev/null < /dev/null;
 				if [ "${?}" != "0" ];
 				then
 					echo "$(get_time)! ERROR: fsck error, need clone repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -434,7 +440,7 @@ function get_git()
 		rm -rf -- "${NAME}.git"; &> /dev/null; # for old versions compatibility
 		rm -rf -- "${NAME_BARE}" &> /dev/null;
 		echo "$(get_time)+ clone  repository \"${SUBDIR}${NAME}\" from \"${URL}\"";
-		git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null < /dev/null;
+		"${NICE}" git clone --mirror "${URL}" "${NAME_BARE}" &> /dev/null < /dev/null;
 		if [ "${?}" != "0" ];
 		then
 			echo "$(get_time)! ERROR: clone error, skip repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -464,7 +470,7 @@ function get_git()
 
 
 # fetch all
-	git fetch --all -p &> /dev/null < /dev/null;
+	"${NICE}" git fetch --all -p &> /dev/null < /dev/null;
 	if [ "${?}" != "0" ];
 	then
 		echo "$(get_time)! ERROR: fetch error, skip repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -506,7 +512,7 @@ function get_git()
 # fsck repo if enabled
 	if [ "${GIT_BACKUP_FLAG_REPO_FSCK}" != "0" ];
 	then
-		git fsck --full &> /dev/null < /dev/null;
+		"${NICE}" git fsck --full &> /dev/null < /dev/null;
 		if [ "${?}" != "0" ];
 		then
 			echo "$(get_time)! ERROR: fsck error, skip repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
@@ -520,13 +526,13 @@ function get_git()
 	then
 		if [ "${GIT_BACKUP_FLAG_REPO_GC_PRUNE}" == "1" ];
 		then
-			git gc --aggressive --prune=now &> /dev/null < /dev/null;
+			"${NICE}" git gc --aggressive --prune=now &> /dev/null < /dev/null;
 			if [ "${?}" != "0" ];
 			then
 				echo "$(get_time)! ERROR: gc error, into repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
 			fi
 		else
-			git gc --aggressive --no-prune &> /dev/null < /dev/null;
+			"${NICE}" git gc --aggressive --no-prune &> /dev/null < /dev/null;
 			if [ "${?}" != "0" ];
 			then
 				echo "$(get_time)! ERROR: gc error, into repo \"${SUBDIR}${NAME}\" from \"${URL}\"";
