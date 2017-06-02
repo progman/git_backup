@@ -1,0 +1,3 @@
+# this is Git repositories list, format: SOURCE_GIT_URL TARGET_GIT_URL
+
+ssh://git@host:port/home/git/repo/repo1.git		ssh://git@host:port/home/git/repo/repo2.git
