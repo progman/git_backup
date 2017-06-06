@@ -158,7 +158,6 @@ function main()
 			return 1;
 		fi
 	fi
-	cd -- "${GIT_BACKUP_NAT_CACHE_DIR}" &> /dev/null < /dev/null;
 
 
 # get list
@@ -177,6 +176,8 @@ function main()
 	sed -e 's/#.*//' "${GIT_BACKUP_NAT_LIST}" | sed -e 's/\ *$//g' | sed -e '/^$/d' > "${TMP}";
 	while read -r SOURCE_GIT_URL TARGET_GIT_URL;
 	do
+		cd -- "${GIT_BACKUP_NAT_CACHE_DIR}" &> /dev/null < /dev/null;
+
 		if [ "${SOURCE_GIT_URL}" == "" ] || [ "${TARGET_GIT_URL}" == "" ];
 		then
 			continue;
