@@ -7,7 +7,7 @@
 # view current time
 function get_time()
 {
-	if [ "$(which date)" != "" ];
+	if [ "$(command -v date)" != "" ];
 	then
 		echo "[$(date +'%Y-%m-%d %H:%M:%S')]: ";
 	fi
@@ -18,7 +18,7 @@ function check_prog()
 {
 	for i in ${1};
 	do
-		if [ "$(which ${i})" == "" ];
+		if [ "$(command -v ${i})" == "" ];
 		then
 			echo "$(get_time)! FATAL: you must install \"${i}\", exit";
 			return 1;
@@ -31,7 +31,7 @@ function check_prog()
 # do beep
 function alarm()
 {
-	if [ "$(which beep)" != "" ] && [ "${1}" == "1" ];
+	if [ "$(command -v beep)" != "" ] && [ "${1}" == "1" ];
 	then
 		beep -r 1 -f 3000;
 	fi
@@ -49,7 +49,7 @@ function human_size()
 	fi
 
 
-	if [ "$(which bc)" == "" ] || [ ${SIZE} -lt 1024 ]; # ${SIZE} < 1024
+	if [ "$(command -v bc)" == "" ] || [ ${SIZE} -lt 1024 ]; # ${SIZE} < 1024
 	then
 		echo "${SIGN}${SIZE} B";
 		return;
@@ -257,7 +257,7 @@ function pack()
 	local ARCH_OPT='cf';
 
 
-	if [ "$(which gzip)" != "" ];
+	if [ "$(command -v gzip)" != "" ];
 	then
 		if [ "${GIT_BACKUP_FLAG_USE_BZIP2}" != "1" ] && [ "${GIT_BACKUP_FLAG_USE_XZ}" != "1" ];
 		then
@@ -272,7 +272,7 @@ function pack()
 	fi
 
 
-	if [ "$(which bzip2)" != "" ];
+	if [ "$(command -v bzip2)" != "" ];
 	then
 		if [ "${GIT_BACKUP_FLAG_USE_GZIP}" != "1" ] && [ "${GIT_BACKUP_FLAG_USE_XZ}" != "1" ];
 		then
@@ -287,7 +287,7 @@ function pack()
 	fi
 
 
-	if [ "$(which xz)" != "" ];
+	if [ "$(command -v xz)" != "" ];
 	then
 		if [ "${GIT_BACKUP_FLAG_USE_GZIP}" != "1" ] && [ "${GIT_BACKUP_FLAG_USE_BZIP2}" != "1" ];
 		then
@@ -305,7 +305,7 @@ function pack()
 	local FILE="${NAME_BARE}.$(date +'%Y%m%d_%H%M%S').${ARCH_EXT}";
 
 	local NICE='nice -n 20';
-	if [ "$(which ionice)" != "" ];
+	if [ "$(command -v ionice)" != "" ];
 	then
 		NICE='ionice -c 3 nice -n 20';
 	fi
@@ -335,7 +335,7 @@ function get_git()
 	local URL_CUR;
 
 	local NICE='nice -n 20';
-	if [ "$(which ionice)" != "" ];
+	if [ "$(command -v ionice)" != "" ];
 	then
 		NICE='ionice -c 3 nice -n 20';
 	fi

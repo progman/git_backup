@@ -7,7 +7,7 @@
 # view current time
 function get_time()
 {
-	if [ "$(which date)" != "" ];
+	if [ "$(command -v date)" != "" ];
 	then
 		echo "[$(date +'%Y-%m-%d %H:%M:%S')]: ";
 	fi
@@ -18,7 +18,7 @@ function check_prog()
 {
 	for i in ${1};
 	do
-		if [ "$(which ${i})" == "" ];
+		if [ "$(command -v ${i})" == "" ];
 		then
 			echo "$(get_time)! FATAL: you must install \"${i}\", exit";
 			return 1;
@@ -36,7 +36,7 @@ function do_repo()
 
 
 	local NICE='nice -n 20';
-	if [ "$(which ionice)" != "" ];
+	if [ "$(command -v ionice)" != "" ];
 	then
 		NICE='ionice -c 3 nice -n 20';
 	fi
