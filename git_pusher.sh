@@ -1,6 +1,6 @@
 #!/bin/bash
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
-# 0.0.2
+# 0.0.3
 # git clone git://github.com/progman/git_backup.git
 # Alexey Potehin <gnuplanet@gmail.com>, http://www.gnuplanet.ru/doc/cv
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------#
@@ -53,21 +53,30 @@ function do_repo()
 	fi
 
 
+# migration from old versions
+	if [ -d "${HASH}" ];
+	then
+		rm -rf "${HASH}.git" &> /dev/null < /dev/null;
+		mv "${HASH}" "${HASH}.git" &> /dev/null < /dev/null;
+	fi
+
+
+# go to repo
 	local FLAG_CLONE="0";
-	if [ ! -d "${HASH}" ];
+	if [ ! -d "${HASH}.git" ];
 	then
 		FLAG_CLONE="1";
 # clone git repo
 #		echo "$(get_time)  clone repo \"${SOURCE_GIT_URL}\" to tmp dir";
-		${NICE} git clone --mirror "${SOURCE_GIT_URL}" "${HASH}" &> /dev/null < /dev/null;
+		${NICE} git clone --mirror "${SOURCE_GIT_URL}" "${HASH}.git" &> /dev/null < /dev/null;
 		if [ "${?}" != "0" ];
 		then
 			echo "$(get_time)! ERROR: clone error, skip repo \"${SOURCE_GIT_URL}\"";
 			return 1;
 		fi
-		cd -- "${HASH}" &> /dev/null < /dev/null;
+		cd -- "${HASH}.git" &> /dev/null < /dev/null;
 	else
-		cd -- "${HASH}" &> /dev/null < /dev/null;
+		cd -- "${HASH}.git" &> /dev/null < /dev/null;
 
 
 # set source url
